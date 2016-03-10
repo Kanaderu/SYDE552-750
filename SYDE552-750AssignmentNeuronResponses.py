@@ -116,19 +116,30 @@ def one_d():
 		for u in unique_directions])
 
 	#calculate spike rate = spike count/time for each direction, avg over trials
-	rate_vs_direction=[]
+	rate_vs_direction_mean=[]
+	rate_vs_direction_std=[]
 	for direction in trial_indices:
-		total_spikes_dir=0
+		dir_spikes_count=[]
 		for trial in direction:
-			total_spikes_dir+=len(spikeTimes[0][trial][0])
-		rate_vs_direction.append(total_spikes_dir/len(direction)/T)
+			trial_spike_times=spikeTimes[0][trial][0]
+			#find indices of spikes between 50 and 250 ms
+			fifty_to_twofifty_indices=np.where(trial_spike_times[
+				(0.050<=trial_spike_times) & (trial_spike_times<=0.250)])[0]
+			fifty_to_twofifty_spike_count=len(fifty_to_twofifty_indices)
+			dir_spikes_count.append(fifty_to_twofifty_spike_count)
+		rate_vs_direction_mean.append(np.average(dir_spikes_count))
+		rate_vs_direction_std.append(np.std(dir_spikes_count))
 
 	#Plot the tuning curve
 	fig=plt.figure(figsize=(16,8))
 	ax=fig.add_subplot(111)
-	ax.plot(unique_directions,rate_vs_direction)
+	ax.plot(unique_directions,rate_vs_direction_mean)
+	ax.fill_between(unique_directions,
+		np.subtract(rate_vs_direction_mean,rate_vs_direction_std),
+		np.add(rate_vs_direction_mean,rate_vs_direction_std),
+		color='lightgray')
 	ax.set_xlabel('angle (degrees)')
-	ax.set_ylabel('trial-averaged firing rate')
+	ax.set_ylabel('trial-averaged firing rate, 50-250ms')
 	plt.show()
 
 def load_data_two():
@@ -245,9 +256,9 @@ def main():
 
 	# one_b()
 	# one_c()
-	# one_d()
+	one_d()
 	# two_b()
-	two_c()
-	two_d()
+	# two_c()
+	# two_d()
 
 main()
