@@ -3,101 +3,100 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from keras.datasets import cifar10
-from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Graph
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
-from six.moves import range
 
-'''#####################################################################
- Defining varibales 
-#####################################################################'''
-
+# Learning parameters
 batch_size = 32
 nb_classes = 10
 nb_epoch = 2
 data_augmentation = True
+train_datapoints=5000
+test_datapoints=1000
 
-# shape of the image (SHAPE x SHAPE)
-shapex, shapey = 32, 32
-# number of convolutional filters to use at each layer
-nb_filters = [32, 64]
-# level of pooling to perform at each layer (POOL x POOL)
-nb_pool = [2, 2]
-# level of convolution to perform at each layer (CONV x CONV)
-nb_conv = [3, 3]
-# the CIFAR10 images are RGB
-image_depth = 3
-image_dimensions=(image_depth,shapex,shapey)
-
-
-
-'''#####################################################################
- Loading the data and labels
-#####################################################################
-dirname = "cifar-10-batches-py"
-origin = "http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
-path = get_file(dirname, origin=origin, untar=True)
-
-nb_test_samples = 10000
-nb_train_samples = 50000
-
-X_train = np.zeros((nb_train_samples, 3, 32, 32), dtype="uint8")
-y_train = np.zeros((nb_train_samples,), dtype="uint8")
-
-for i in range(1, 6):
-    fpath = os.path.join(path, 'data_batch_' + str(i))
-    data, labels = load_batch(fpath)
-    X_train[(i-1)*10000:i*10000, :, :, :] = data
-    y_train[(i-1)*10000:i*10000] = labels
-
-fpath = os.path.join(path, 'test_batch')
-X_test, y_test = load_batch(fpath)
-
-y_train = np.reshape(y_train, (len(y_train), 1))
-y_test = np.reshape(y_test, (len(y_test), 1))
-
-# convert class vectors to binary class matrices
-Y_train = np_utils.to_categorical(y_train, nb_classes)
-Y_test = np_utils.to_categorical(y_test, nb_classes)'''
+# Network parameters
+nb_filters = [32, 64] # number of convolutional filters to use at each layer
+nb_pool = [2, 2] # level of pooling to perform at each layer
+nb_conv = [3, 3] # level of convolution to perform at each layer
+nb_dropout = [0.25, 0.25, 0.5] # dropout fraction
+nb_dense = [512, 10] # output dimension for dense layers
 
 # the data, shuffled and split between train and test sets
 (X_train, y_train), (X_test, y_test) = cifar10.load_data()
-print('X_train shape:', X_train.shape)
-print(X_train.shape[0], 'train samples')
-print(X_test.shape[0], 'test samples')
+
+# shape of the image (SHAPE x SHAPE)
+shapex, shapey, shapez = X_train.shape[2], X_train.shape[3], X_train.shape[1]
+samples_train = X_train.shape[0]
+samples_test = X_test.shape[0]
+dimensions=(shapez,shapex,shapey)
 
 # convert class vectors to binary class matrices
 Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
-'''#####################################################################
- Graph model
-#####################################################################'''
-model =  Graph()
-# Load the input
-model.add_input(name='input1', input_shape=image_dimensions)
-# Convolution Neural Network architecture (5 convolution layers, 3 pooling layers)
+'''Network'''
+model = Graph()
 
-model.add_node(Convolution2D(nb_filters[0], nb_conv[0], nb_conv[0], activation='relu', border_mode='valid'), name='conv2', input='input1')
-model.add_node(Convolution2D(nb_filters[0], nb_filters[0], nb_conv[0], nb_conv[0], activation='relu', border_mode='valid'), name='conv3', input='conv2')
-model.add_node(MaxPooling2D(poolsize=(nb_pool[0], nb_pool[0])), name='pool1', input='conv3')
+#input
+model.add_input(name='input1', input_shape=dimensions)
 
-model.add_node(Convolution2D(nb_filters[1], nb_filters[0], nb_conv[0], nb_conv[0], activation='relu', border_mode='valid'), name='conv4', input='pool1')
-model.add_node(Convolution2D(nb_filters[1], nb_filters[1], nb_conv[1], nb_conv[1], activation='relu', border_mode='valid'), name='conv5', input='conv4')
-model.add_node(MaxPooling2D(poolsize=(nb_pool[1], nb_pool[1])), name='pool2', input='conv5')
+#layer 1
+model.add_node(Convolution2D(nb_filters[0], nb_conv[0], nb_conv[0], 
+				activation='relu', border_mode='valid', input_shape=dimensions),
+				name='conv2', input='input1')
+model.add_node(Convolution2D(nb_filters[0], nb_conv[0], nb_conv[0], 
+				activation='relu', border_mode='valid'),
+				name='conv3', input='conv2')
+model.add_node(MaxPooling2D(pool_size=(nb_pool[0], nb_pool[0])), 
+				name='pool1', input='conv3')
+model.add_node(Dropout(nb_dropout[0]),
+				name='drop1', input='pool1')
 
-model.add_node(Flatten(), name='flatten', input='pool2')
+#layer 2
+model.add_node(Convolution2D(nb_filters[1], nb_conv[1], nb_conv[1],
+				activation='relu', border_mode='valid'),
+				name='conv4', input='pool1')
+model.add_node(Convolution2D(nb_filters[1], nb_conv[1], nb_conv[1],
+				activation='relu', border_mode='valid'),
+				name='conv5', input='conv4')
+model.add_node(MaxPooling2D(pool_size=(nb_pool[1], nb_pool[1])),
+				name='pool2', input='conv5')
+model.add_node(Dropout(nb_dropout[1]),
+				name='drop2', input='pool2')
 
-model.add_node(Dense(nb_filters[-1] * (shapex / nb_pool[0] / nb_pool[1]) * (shapey / nb_pool[0] / nb_pool[1]), 512, activation='relu', init='uniform'),  name='dense1', input='flatten')
-model.add_node(Dense(512, nb_classes, activation='softmax', init='uniform'), name='dense2', input='dense1')
+#layer 3
+model.add_node(Flatten(),
+				name='flatten3', input='pool2')
+# unknown = nb_filters[-1] * (shapex / nb_pool[0] / nb_pool[1]) * (shapey / nb_pool[0] / nb_pool[1])
+model.add_node(Dense(nb_dense[0],
+				activation='relu', init='glorot_uniform'),
+				name='dense3', input='flatten3')
+model.add_node(Dropout(nb_dropout[2]),
+				name='drop3', input='dense3')
+model.add_node(Dense(nb_dense[1],
+				activation='softmax', init='glorot_uniform'),
+				name='dense4', input='drop3')
 
-model.add_output(name='output1', input='dense2', merge_mode='sum')
-model.compile('sgd', {'output1':'categorical_crossentropy'})
-model.get_config(verbose=1)
+#output
+model.add_output(name='output1', input='dense4', merge_mode='sum')
 
-model.fit({'input1':X_train, 'output1':Y_train},batch_size=batch_size, nb_epoch=nb_epoch)
+
+#optimize, compile, and print
+sgd1 = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(sgd1, {'output1':'categorical_crossentropy'})
+# model.get_config(verbose=1)
+
+#train
+X_train = X_train.astype('float32')
+X_test = X_test.astype('float32')
+X_train /= 255
+X_test /= 255
+history=model.fit({'input1':X_train[:train_datapoints], 'output1':Y_train[:train_datapoints]},
+			batch_size=batch_size, nb_epoch=nb_epoch, shuffle=True,
+            validation_data={'input1':X_test[:test_datapoints], 'output1':Y_test[:test_datapoints]})
+print (history.history)
 
 #model.predict({'input1':X_test})

@@ -22,8 +22,10 @@ from keras.utils import np_utils
 
 batch_size = 32
 nb_classes = 10
-nb_epoch = 200
-data_augmentation = True
+nb_epoch = 2
+data_augmentation = False
+train_datapoints=5000
+test_datapoints=1000
 
 # input image dimensions
 img_rows, img_cols = 32, 32
@@ -32,9 +34,6 @@ img_channels = 3
 
 # the data, shuffled and split between train and test sets
 (X_train, y_train), (X_test, y_test) = cifar10.load_data()
-print('X_train shape:', X_train.shape)
-print(X_train.shape[0], 'train samples')
-print(X_test.shape[0], 'test samples')
 
 # convert class vectors to binary class matrices
 Y_train = np_utils.to_categorical(y_train, nb_classes)
@@ -75,9 +74,9 @@ X_test /= 255
 
 if not data_augmentation:
     print('Not using data augmentation.')
-    model.fit(X_train, Y_train, batch_size=batch_size,
-              nb_epoch=nb_epoch, show_accuracy=True,
-              validation_data=(X_test, Y_test), shuffle=True)
+    model.fit(X_train[:train_datapoints], Y_train[:train_datapoints],
+            batch_size=batch_size, nb_epoch=nb_epoch, show_accuracy=True, shuffle=True,
+            validation_data=(X_test[:test_datapoints], Y_test[:test_datapoints]))
 else:
     print('Using real-time data augmentation.')
 
