@@ -54,13 +54,9 @@ model.add_input(name='input', input_shape=image_dim)
 model.add_node(Convolution2D(n_filters[0],kernel_size[0],kernel_size[0],
 				activation='relu',input_shape=image_dim),
 				name='f_1',input='input')
-# feedforward weight matrix has 2 elements, of shape 
-# (in_dim,out_dim) and (out_dim,) for weights and biases respectively
-# layer_1_size=[np.zeros((n_filters[0],n_filters[0],1,1)),np.zeros((n_filters[0]))]
-layer_1_size=[np.ones((n_filters[0],n_filters[0],1,1)),np.zeros((n_filters[0]))]
-model.add_node(Convolution2D(n_filters[0],1,1,  #1x1 kernels for preserving identity
-				activation='relu',weights=layer_1_size,trainable=False), #init='identity',
-				name='v_1',input='f_1')
+model.add_node(MaxPooling2D(pool_size=(1,1),#feedforward identity
+				trainable=False), 
+				name='v_1', input='f_1')
 
 model.add_node(Flatten(),
 				name='flat_1', input='v_1')
@@ -87,5 +83,12 @@ history=model.fit({'input':X_train[:train_datapoints], 'output':Y_train[:train_d
 # Print results and network configuration
 print (history.history)
 # model.get_config(verbose=1)
-print (model.nodes['f_1'].get_output(train=False))
-print (model.nodes['v_1'].get_output(train=False))
+def get_activations(model, input_name, layer_name, X_batch):
+    get_activations = theano.function([model.inputs[input_name].input], model.nodes[layer_name].get_output(train=False), allow_input_downcast=True)
+    activations = get_activations(X_batch) # same result as above
+    return activations
+
+f_1_output=get_activations(model,'input','f_1',X_test[:test_datapoints])
+v_1_output=get_activations(model,'input','v_1',X_test[:test_datapoints])
+print (f_1_output[1])
+print (v_1_output[1])

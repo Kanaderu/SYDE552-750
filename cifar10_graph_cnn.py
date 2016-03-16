@@ -14,8 +14,8 @@ batch_size = 32
 nb_classes = 10
 nb_epoch = 2
 data_augmentation = True
-train_datapoints=5000
-test_datapoints=1000
+train_datapoints=500
+test_datapoints=100
 
 # Network parameters
 nb_filters = [32, 64] # number of convolutional filters to use at each layer

@@ -19,13 +19,14 @@ from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.utils import np_utils
+import theano
 
 batch_size = 32
 nb_classes = 10
 nb_epoch = 2
 data_augmentation = False
-train_datapoints=5000
-test_datapoints=1000
+train_datapoints=50
+test_datapoints=10
 
 # input image dimensions
 img_rows, img_cols = 32, 32
@@ -103,3 +104,10 @@ else:
                         nb_epoch=nb_epoch, show_accuracy=True,
                         validation_data=(X_test, Y_test),
                         nb_worker=1)
+
+def get_activations(model, layer, X_batch):
+    get_activations = theano.function([model.layers[0].input], model.layers[layer].get_output(train=False), allow_input_downcast=True)
+    activations = get_activations(X_batch) # same result as above
+    return activations
+
+print (get_activations(model,0,X_test[:test_datapoints]))
