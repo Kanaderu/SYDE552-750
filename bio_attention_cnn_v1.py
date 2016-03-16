@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from keras.datasets import cifar10
 from keras.models import Graph
-from keras.layers.core import Dense, Dropout, Activation, Flatten
+from keras.layers.core import *
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
@@ -19,7 +19,7 @@ batch_size = 40
 classes = 10
 epochs = 2
 train_datapoints=50
-test_datapoints=30
+test_datapoints=25
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
@@ -47,9 +47,7 @@ X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
 
-# Feedforward weights workaround
-
-
+# Feedforward weights workarounds
 def get_v_weights(n_filters):
 	weights=[]
 	for i in range(n_filters):
@@ -66,6 +64,29 @@ def get_v_biases(bias_value,n_filters):
 	biases=np.full(shape=n_filters, fill_value=bias_value)
 	return biases
 
+def get_s_weights(n_filters):
+	weights=[]
+	for i in range(n_filters):
+		weights_i=[]
+		#first half of concatenated inputs is from v population
+		for j in range(n_filters):
+			if i==j:
+				weights_i.append(1.0*np.ones((1,1))) #positive weights
+			else:
+				weights_i.append(np.zeros((1,1)))
+		#second half of concatenated inputs is from u population
+		for j in range(n_filters):
+			if i==j:
+				weights_i.append(-0.5*np.ones((1,1))) #negative weights
+			else:
+				weights_i.append(np.zeros((1,1)))
+		weights.append(weights_i)
+	return np.array(weights)
+
+def get_s_biases(n_filters):
+	biases=np.zeros(shape=n_filters)
+	return biases
+
 # Network
 model = Graph()
 model.add_input(name='input', input_shape=image_dim)
@@ -73,10 +94,23 @@ model.add_input(name='input', input_shape=image_dim)
 model.add_node(Convolution2D(n_filters[0],kernel_size[0],kernel_size[0],
 				activation='relu',input_shape=image_dim,trainable=False),
 				name='f_1',input='input')
+
 v_1_matrix=[get_v_weights(n_filters[0]),get_v_biases(0.1,n_filters[0])]
+
 model.add_node(Convolution2D(n_filters[0],1,1,
 				activation='linear',weights=v_1_matrix,trainable=False),
 				name='v_1',input='f_1')
+
+#test merge with fake u1 layer
+model.add_node(Convolution2D(n_filters[0],1,1,
+				activation='linear',weights=v_1_matrix,trainable=False),
+				name='u_1',input='f_1')
+s_1_matrix=[get_s_weights(n_filters[0]),get_s_biases(n_filters[0])]
+
+model.add_node(Convolution2D(n_filters[0],1,1,
+				activation='linear', weights=s_1_matrix, trainable=False),
+				name='s_1',inputs=['v_1','u_1'],
+				merge_mode='concat',concat_axis=1)
 
 model.add_node(Flatten(),
 				name='flat_1', input='v_1')
@@ -101,21 +135,39 @@ history=model.fit({'input':X_train[:train_datapoints], 'output':Y_train[:train_d
             validation_data={'input':X_test[:test_datapoints], 'output':Y_test[:test_datapoints]})
 
 # Print results and network configuration
-print (history.history)
+# print (history.history)
 # model.get_config(verbose=1)
+def get_inputs(model, input_name, layer_name, X_batch):
+    get_inputs = theano.function([model.inputs[input_name].input], model.nodes[layer_name].get_input(train=False), allow_input_downcast=True)
+    my_inputs = get_inputs(X_batch)
+    return my_inputs
 
-def get_activations(model, input_name, layer_name, X_batch):
-    get_activations = theano.function([model.inputs[input_name].input], model.nodes[layer_name].get_output(train=False), allow_input_downcast=True)
-    my_activations = get_activations(X_batch) # same result as above
-    return my_activations
+def get_outputs(model, input_name, layer_name, X_batch):
+    get_outputs = theano.function([model.inputs[input_name].input], model.nodes[layer_name].get_output(train=False), allow_input_downcast=True)
+    my_outputs = get_outputs(X_batch)
+    return my_outputs
 
-f_1_output=get_activations(model,'input','f_1',X_test[:test_datapoints])
-v_1_output=get_activations(model,'input','v_1',X_test[:test_datapoints])
-f_1_weights=model.nodes['f_1'].get_weights()
-v_1_weights=model.nodes['v_1'].get_weights()
-print (f_1_output.shape)
-print (v_1_output.shape)
-print (f_1_output.sum())
-print (v_1_output.sum())
-# print (f_1_weights)
-# print (v_1_weights)
+
+f_1_input=get_inputs(model,'input','f_1',X_test[:test_datapoints])
+v_1_input=get_inputs(model,'input','v_1',X_test[:test_datapoints])
+u_1_input=get_inputs(model,'input','u_1',X_test[:test_datapoints])
+s_1_input=get_inputs(model,'input','s_1',X_test[:test_datapoints])
+print ('f_1 input shape, sum',f_1_input.shape,f_1_input.sum())
+print ('v_1 input shape, sum',v_1_input.shape,v_1_input.sum())
+print ('u_1 input shape, sum',u_1_input.shape,u_1_input.sum())
+print ('s_1 input shape, sum',s_1_input.shape,s_1_input.sum())
+
+
+f_1_output=get_outputs(model,'input','f_1',X_test[:test_datapoints])
+v_1_output=get_outputs(model,'input','v_1',X_test[:test_datapoints])
+u_1_output=get_outputs(model,'input','u_1',X_test[:test_datapoints])
+s_1_output=get_outputs(model,'input','s_1',X_test[:test_datapoints])
+print ('f_1 output shape, sum',f_1_output.shape,f_1_output.sum())
+print ('v_1 output shape, sum',v_1_output.shape,v_1_output.sum())
+print ('u_1 output shape, sum',u_1_output.shape,u_1_output.sum())
+print ('s_1 output shape, sum',s_1_output.shape,s_1_output.sum())
+
+# print ('s_1 weights',np.array(model.nodes['s_1'].get_weights()).shape,
+# 	np.array(model.nodes['s_1'].get_weights()).sum())
+
+
