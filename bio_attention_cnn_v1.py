@@ -60,7 +60,7 @@ def get_v_weights(n_filters):
 		weights.append(weights_i)
 	return np.array(weights)
 
-def get_v_biases(bias_value,n_filters):
+def get_biases(bias_value,n_filters):
 	biases=np.full(shape=n_filters, fill_value=bias_value)
 	return biases
 
@@ -83,9 +83,27 @@ def get_s_weights(n_filters):
 		weights.append(weights_i)
 	return np.array(weights)
 
-def get_s_biases(n_filters):
-	biases=np.zeros(shape=n_filters)
-	return biases
+def get_b_weights(n_filters,x_dim,y_dim,ISS): #ISS=inhibitory surround size
+	weights=[]
+	for i in range(n_filters):
+		weights_i=[]
+		#first half of concatenated inputs is from s population
+		for j in range(n_filters):
+			if i==j:
+				#make a ISSxISS kernel that implements supressive surround
+				#such that s_ij's neighbors have negative weight.
+				#default: UDLF neighbor weights=-1, no mutual excitation
+				weights_i.append(np.array(	[[0,-1,0],
+											[-1,0,-1],
+											[0,-1,0]]  ))
+			else:
+				#make an empty 3x3 kernel
+				weights_i.append(np.zeros((ISS,ISS)))
+		#second half of concatenated inputs is from b population
+		weights_i.append(-1.0*np.ones((1,1))) #salience inhibition 
+		weights.append(weights_i)
+	return np.array(weights)
+
 
 # Network
 model = Graph()
@@ -95,22 +113,32 @@ model.add_node(Convolution2D(n_filters[0],kernel_size[0],kernel_size[0],
 				activation='relu',input_shape=image_dim,trainable=False),
 				name='f_1',input='input')
 
-v_1_matrix=[get_v_weights(n_filters[0]),get_v_biases(0.1,n_filters[0])]
+v_1_matrix=[get_v_weights(n_filters[0]),get_biases(0.1,n_filters[0])]
+model.add_node(Convolution2D(n_filters[0],1,1,
+				activation='linear',weights=v_1_matrix,trainable=False),
+				name='u_1',input='f_1')
 
+#test merge with fake v_1 layer
 model.add_node(Convolution2D(n_filters[0],1,1,
 				activation='linear',weights=v_1_matrix,trainable=False),
 				name='v_1',input='f_1')
 
-#test merge with fake u1 layer
-model.add_node(Convolution2D(n_filters[0],1,1,
-				activation='linear',weights=v_1_matrix,trainable=False),
-				name='u_1',input='f_1')
-s_1_matrix=[get_s_weights(n_filters[0]),get_s_biases(n_filters[0])]
-
+s_1_matrix=[get_s_weights(n_filters[0]),get_biases(0.0,n_filters[0])]
 model.add_node(Convolution2D(n_filters[0],1,1,
 				activation='linear', weights=s_1_matrix, trainable=False),
 				name='s_1',inputs=['v_1','u_1'],
 				merge_mode='concat',concat_axis=1)
+
+#test merge with fake b_1 layer
+model.add_node(Convolution2D(n_filters[0],1,1,
+				activation='linear',weights=v_1_matrix,trainable=False),
+				name='b_1',input='f_1')
+b_1_matrix=[get_b_weights(n_filters[0]),get_biases(1.0,n_filters[0])]
+
+model.add_node(Convolution2D(n_filters[0],1,1,
+				activation='linear', weights=p_1_matrix, trainable=False),
+				name='p_1',inputs=['s_1','b_1'],
+				merge_mode='concat', concat_axis=1)
 
 model.add_node(Flatten(),
 				name='flat_1', input='v_1')

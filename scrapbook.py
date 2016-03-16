@@ -1,3 +1,11 @@
+#test merge with fake u1 layer
+model.add_node(Convolution2D(n_filters[0],1,1,
+				activation='linear',weights=v_1_matrix,trainable=False),
+				name='u_1',input='f_1')
+s_1_matrix=[get_s_weights(n_filters[0]),get_s_biases(n_filters[0])]
+v_1_matrix=[get_v_weights(n_filters[0]),get_v_biases(0.1,n_filters[0])]
+
+
 # Network
 model = Graph()
 model.add_input(name='input', input_shape=image_dim)
