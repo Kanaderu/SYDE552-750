@@ -48,7 +48,8 @@ X_train /= 255
 X_test /= 255
 
 # Feedforward weights workarounds
-def get_v_weights(n_filters):
+# for inhibitory interneurons u and v
+def get_u_weights(n_filters):
 	weights=[]
 	for i in range(n_filters):
 		weights_i=[]
@@ -60,10 +61,7 @@ def get_v_weights(n_filters):
 		weights.append(weights_i)
 	return np.array(weights)
 
-def get_biases(bias_value,n_filters):
-	biases=np.full(shape=n_filters, fill_value=bias_value)
-	return biases
-
+# for spreading units
 def get_s_weights(n_filters):
 	weights=[]
 	for i in range(n_filters):
@@ -83,7 +81,8 @@ def get_s_weights(n_filters):
 		weights.append(weights_i)
 	return np.array(weights)
 
-def get_b_weights(n_filters,x_dim,y_dim,ISS): #ISS=inhibitory surround size
+# for pooling units
+def get_p_weights(n_filters,x_dim,y_dim,ISS): #ISS=inhibitory surround size
 	weights=[]
 	for i in range(n_filters):
 		weights_i=[]
@@ -104,44 +103,87 @@ def get_b_weights(n_filters,x_dim,y_dim,ISS): #ISS=inhibitory surround size
 		weights.append(weights_i)
 	return np.array(weights)
 
+# for feedforward salience units
+def get_f_weights(n_filters,x_dim,y_dim):
+	weights=[np.ones((x_dim,y_dim)) for i in range(n_filters)]
+	return np.array(weights)
+
+# TEMP for feedback salience units
+def get_b_weights(x_dim,y_dim):
+	weights=np.ones((x_dim,y_dim))
+	return np.array(weights)
+
+#for all units, used in interneurons and pooling
+def get_biases(bias_value,n_filters):
+	biases=np.full(shape=n_filters, fill_value=bias_value)
+	return biases
+
 
 # Network
 model = Graph()
+
+#input and convolution
 model.add_input(name='input', input_shape=image_dim)
 
 model.add_node(Convolution2D(n_filters[0],kernel_size[0],kernel_size[0],
 				activation='relu',input_shape=image_dim,trainable=False),
-				name='f_1',input='input')
+				name='in_1',input='input')
 
-v_1_matrix=[get_v_weights(n_filters[0]),get_biases(0.1,n_filters[0])]
+
+# spreading and pooling layer
+#input shape = (16,16,1,1), output_shape = (16,16,1,1)
+u_1_matrix=[get_u_weights(n_filters[0]),get_biases(0.1,n_filters[0])]
 model.add_node(Convolution2D(n_filters[0],1,1,
-				activation='linear',weights=v_1_matrix,trainable=False),
-				name='u_1',input='f_1')
+				activation='linear',weights=u_1_matrix,trainable=False),
+				name='u_1',input='in_1')
 
 #test merge with fake v_1 layer
-model.add_node(Convolution2D(n_filters[0],1,1,
-				activation='linear',weights=v_1_matrix,trainable=False),
-				name='v_1',input='f_1')
+# model.add_node(Convolution2D(n_filters[0],1,1,
+# 				activation='linear',weights=v_1_matrix,trainable=False),
+# 				name='v_1',input='f_1')
 
+#input shape = (16,32,1,1), output_shape = (16,16,1,1)
 s_1_matrix=[get_s_weights(n_filters[0]),get_biases(0.0,n_filters[0])]
 model.add_node(Convolution2D(n_filters[0],1,1,
 				activation='linear', weights=s_1_matrix, trainable=False),
 				name='s_1',inputs=['v_1','u_1'],
 				merge_mode='concat',concat_axis=1)
 
-#test merge with fake b_1 layer
+#input shape = (16,16,1,1), output_shape = (16,16,1,1)
+v_1_matrix=[get_u_weights(n_filters[0]),get_biases(1,n_filters[0])]
 model.add_node(Convolution2D(n_filters[0],1,1,
-				activation='linear',weights=v_1_matrix,trainable=False),
-				name='b_1',input='f_1')
-b_1_matrix=[get_b_weights(n_filters[0]),get_biases(1.0,n_filters[0])]
+				activation='hard_sigmoid',weights=v_1_matrix,trainable=False),
+				name='v_1',input='p_1')
 
+#input shape = (16,17,1,1), output_shape = (16,16,1,1)
+x_dim, y_dim, ISS = (n_filters[0]-kernel_size[0]+1),(n_filters[0]-kernel_size[0]+1), 3
+p_1_matrix=[get_p_weights(n_filters[0],x_dim,y_dim,ISS),get_biases(1.0,n_filters[0])]
+print (p_1_matrix[0].shape, p_1_matrix[1].shape)
 model.add_node(Convolution2D(n_filters[0],1,1,
 				activation='linear', weights=p_1_matrix, trainable=False),
 				name='p_1',inputs=['s_1','b_1'],
 				merge_mode='concat', concat_axis=1)
 
+
+# Salience layer
+# each f unit sums activation of all s_ij from each previous feature map
+#input shape = (1,16,30,30), output_shape = (1,1,16,16)
+f_1_matrix=[get_f_weights(n_filters[0],x_dim,y_dim),get_biases(0.0,n_filters[0])]
+model.add_node(Convolution2D(1,n_filters[0],n_filters[0],
+				activation='linear',weights=f_1_matrix,trainable=False),
+				name='f_1',input='s_1')
+
+# temporary b unit copies f input
+#input shape = (1,1,16,16), output_shape = (16,1,1,1)
+b_1_matrix=[get_b_weights(x_dim,y_dim),get_biases(0.0,x_dim)]
+model.add_node(Convolution2D(1,1,1,
+				activation='linear',weights=b_1_matrix,trainable=False),
+				name='b_1',input='f_1')
+
+
+
 model.add_node(Flatten(),
-				name='flat_1', input='v_1')
+				name='flat_1', input='s_1')
 model.add_node(Dense(dense_size[0],
 				activation='relu'),
 				name='dense_1', input='flat_1')
