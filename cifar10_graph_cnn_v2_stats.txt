@@ -1,0 +1,13 @@
+
+ conv1a: 	 std(mean): 0.0589098 std(max): 0.429095 std(std): 0.127881
+ conv1b: 	 std(mean): 0.0863278 std(max): 0.365092 std(std): 0.104379
+ pool1: 	 std(mean): 0.0865038 std(max): 0.358887 std(std): 0.103492
+ drop1: 	 std(mean): 0.0865038 std(max): 0.358887 std(std): 0.103492
+ conv2a: 	 std(mean): 0.0576017 std(max): 0.260528 std(std): 0.0839246
+ conv2b: 	 std(mean): 0.0334331 std(max): 0.172137 std(std): 0.0534798
+ pool2: 	 std(mean): 0.0414767 std(max): 0.178111 std(std): 0.0544613
+ drop2: 	 std(mean): 0.0414767 std(max): 0.178111 std(std): 0.0544613
+ flatten3: 	 std(mean): 0.0331625 std(max): 0.17587 std(std): 0.0373328
+ dense3: 	 std(mean): 0.0187546 std(max): 0.166054 std(std): 0.0284703
+ drop3: 	 std(mean): 0.0187546 std(max): 0.166054 std(std): 0.0284703
+ dense4: 	 std(mean): 6.49527e-09 std(max): 0.0151098 std(std): 0.00576796
