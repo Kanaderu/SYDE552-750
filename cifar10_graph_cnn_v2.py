@@ -6,21 +6,27 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+import numpy as np
+import theano
+
+# Theano configuration
+# theano.config.device = 'gpu'
+# theano.config.floatX = 'float32'
+# import theano.sandbox.cuda
+# theano.sandbox.cuda.use("gpu")
+
+# Keras imports
 from keras.datasets import cifar10
 from keras.models import Graph
 from keras.layers.core import *
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
-import numpy as np
-import theano
 
 # Learning parameters
 batch_size = 40
 classes = 10
-epochs = 2
-train_datapoints=50
-test_datapoints=25
+epochs = 50
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
@@ -39,6 +45,8 @@ shapex, shapey, shapez = X_train.shape[2], X_train.shape[3], X_train.shape[1]
 samples_train = X_train.shape[0]
 samples_test = X_test.shape[0]
 image_dim=(shapez,shapex,shapey)
+train_datapoints=samples_train
+test_datapoints=samples_test
 
 # Convert class vectors to binary class matrices
 Y_train = np_utils.to_categorical(y_train, classes)
@@ -107,9 +115,9 @@ history=model.fit({'input':X_train[:train_datapoints], 'output':Y_train[:train_d
 predictions = model.predict({'input':X_test[:test_datapoints]})
 
 #save model arcitecture and weights
-# json_string = model.to_json()
-# open('cifar10_graph_cnn_v2.json', 'w').write(json_string)
-# model.save_weights('cifar10_graph_cnn_v2.h5')
+json_string = model.to_json()
+open('cifar10_graph_cnn_v2.json', 'w').write(json_string)
+model.save_weights('cifar10_graph_cnn_v2.h5')
 
 #save layer stats
 def get_outputs(model, input_name, layer_name, X_batch):
