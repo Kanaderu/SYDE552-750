@@ -1,13 +1,13 @@
 
- conv1a: 	 std(mean): 0.0589098 std(max): 0.429095 std(std): 0.127881
- conv1b: 	 std(mean): 0.0863278 std(max): 0.365092 std(std): 0.104379
- pool1: 	 std(mean): 0.0865038 std(max): 0.358887 std(std): 0.103492
- drop1: 	 std(mean): 0.0865038 std(max): 0.358887 std(std): 0.103492
- conv2a: 	 std(mean): 0.0576017 std(max): 0.260528 std(std): 0.0839246
- conv2b: 	 std(mean): 0.0334331 std(max): 0.172137 std(std): 0.0534798
- pool2: 	 std(mean): 0.0414767 std(max): 0.178111 std(std): 0.0544613
- drop2: 	 std(mean): 0.0414767 std(max): 0.178111 std(std): 0.0544613
- flatten3: 	 std(mean): 0.0331625 std(max): 0.17587 std(std): 0.0373328
- dense3: 	 std(mean): 0.0187546 std(max): 0.166054 std(std): 0.0284703
- drop3: 	 std(mean): 0.0187546 std(max): 0.166054 std(std): 0.0284703
- dense4: 	 std(mean): 6.49527e-09 std(max): 0.0151098 std(std): 0.00576796
+ conv1a: 	 std(mean): 0.0893194 std(max): 0.533849 std(std): 0.155507
+ conv1b: 	 std(mean): 0.137291 std(max): 1.28857 std(std): 0.338087
+ pool1: 	 std(mean): 0.269664 std(max): 1.64954 std(std): 0.462259
+ drop1: 	 std(mean): 0.269664 std(max): 1.64954 std(std): 0.462259
+ conv2a: 	 std(mean): 0.221271 std(max): 2.05848 std(std): 0.483005
+ conv2b: 	 std(mean): 0.187346 std(max): 2.50856 std(std): 0.553007
+ pool2: 	 std(mean): 0.327967 std(max): 2.82741 std(std): 0.663901
+ drop2: 	 std(mean): 0.327967 std(max): 2.82741 std(std): 0.663901
+ flatten3: 	 std(mean): 0.148778 std(max): 3.93396 std(std): 0.372278
+ dense3: 	 std(mean): 0.123504 std(max): 3.83291 std(std): 0.438717
+ drop3: 	 std(mean): 0.123504 std(max): 3.83291 std(std): 0.438717
+ dense4: 	 std(mean): 9.71477e-06 std(max): 0.223414 std(std): 0.0624165
