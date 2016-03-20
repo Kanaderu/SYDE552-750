@@ -24,6 +24,13 @@ from keras.layers.convolutional import *
 from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
 
+# CIFAR-10 data
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+shapex, shapey, shapez = X_train.shape[2], X_train.shape[3], X_train.shape[1]
+samples_train = X_train.shape[0]
+samples_test = X_test.shape[0]
+image_dim=(shapez,shapex,shapey)
+
 # Parameters
 batch_size = 32
 classes = 10
@@ -37,8 +44,10 @@ pool_size = [3,3,3] # square size of pooling window at layer_i
 kernel_size = [11,7,3] # square size of kernel at layer_i
 dropout_frac = [0.5, 0.5, 0.5] # dropout fraction at layer_i
 dense_size = [512, classes] # output dimension for dense layers
-
-params={
+train_datapoints=50 #samples_train
+test_datapoints=30 #samples_test
+filename='cifar10_graph_cnn_v3'
+params={ #dictionary
 	'batch_size' : batch_size,
 	'classes' : classes,
 	'epochs' : epochs,
@@ -51,16 +60,10 @@ params={
 	'kernel_size' : kernel_size,
 	'dropout_frac' : dropout_frac,
 	'dense_size' : dense_size,
+	'train_datapoints' : train_datapoints, #samples_train
+	'test_datapoints' : train_datapoints, #samples_test
+	'filename' : filename
 }
-
-# CIFAR-10 data
-(X_train, y_train), (X_test, y_test) = cifar10.load_data()
-shapex, shapey, shapez = X_train.shape[2], X_train.shape[3], X_train.shape[1]
-samples_train = X_train.shape[0]
-samples_test = X_test.shape[0]
-image_dim=(shapez,shapex,shapey)
-train_datapoints=50 #samples_train
-test_datapoints=30 #samples_test
 
 # Convert class vectors to binary class matrices
 Y_train = np_utils.to_categorical(y_train, classes)
@@ -71,19 +74,21 @@ X_train /= 255
 X_test /= 255
 
 # Network
+# In this version, average and max pooling are dead ends at each layer;
+# they only calculate statistics
+
 model = Graph()
 
 #input
 model.add_input(name='input', input_shape=image_dim)
 
 #layer 1
-#average and max pooling are dead ends; they only calculate statistics
 model.add_node(Convolution2D(n_filters[0], kernel_size[0], kernel_size[0], 
 				activation='relu', input_shape=image_dim),
 				name='conv1', input='input')
 model.add_node(AveragePooling2D(pool_size=(pool_size[0], pool_size[0])), 
 				name='avgpool1', input='conv1')
-model.add_node(MaxPooling2D(pool_size=(pool_size[0], pool_size[0])), 
+model.add_node(MaxPooling2D(pool_size=(pool_size[0], pool_size[0])),
 				name='maxpool1', input='conv1')
 model.add_node(Dropout(dropout_frac[0]),
 				name='drop1', input='conv1')
@@ -157,16 +162,26 @@ def get_activities(model):
 			max_pool_nodes.append(the_node)
 	return conv_nodes, avg_pool_nodes, max_pool_nodes
 
-def output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes):
+def output_stuff(params, model, history):
 
-	#save model arcitecture, weights, parameters, and stats
-
-	#open files
+	#parameters
 	with open(filename+'_params.json', 'w') as fp:
 	    json.dump(params, fp)
+
+	#architecture
 	json_string = model.to_json()
 	open(filename+'_model', 'w').write(json_string)
+
+	#weights
 	model.save_weights(filename+'_weights.h5')
+
+	#history
+	history_file = open(filename+"_history.txt", "w")
+	history_file.write(history)
+	history_file.close()
+
+def output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes):
+
 	stats_file = open(filename+"_stats.txt", "w")
 
 	id_string="Layer #\n\
@@ -226,10 +241,6 @@ def output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes):
 
 	stats_file.close()
 
-filename='cifar10_graph_cnn_v3'
+output_stuff(params, model, str(history))
 conv_nodes, avg_pool_nodes, max_pool_nodes = get_activities(model)
 output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes)
-
-with open(filename+'_params.json', 'r') as fp:
-    data = json.load(fp)
-print(data)
