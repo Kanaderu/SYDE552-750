@@ -5,6 +5,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.signal
 plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 20
 
@@ -110,4 +111,109 @@ def one():
 
 	#the mean approaches 1 as t_{ref} appoaches 0, but the std increases slightly
 
-one()
+
+def white_noise(mean=0,std=1,T=100,dt=0.001,rng=np.random.RandomState()):
+	return rng.normal(mean,std,T/dt)
+
+def synthetic_neuron(drive,rng):
+	"""
+	Simulates a mock neuron with a time step of 1ms.
+	Arguments:
+	drive - input to the neuron (expect zero mean; SD=1)
+	Returns:
+	rho - response function (0=non-spike and 1=spike at each time step)
+	"""	
+	  
+	dt = 0.001
+	T = dt*len(drive)
+	time = np.arange(0, T, dt)
+	lagSteps = 0.02/dt
+	drive = np.concatenate((np.zeros(lagSteps), drive[lagSteps:]))
+	system = scipy.signal.lti([1], [0.03**2, 2*0.03, 1])
+	_, L, _ = scipy.signal.lsim(system, drive[:,np.newaxis], time)
+	rate = np.divide(30, 1 + np.exp(50*(0.05-L)))
+	spikeProb = rate*dt
+	return rng.rand(len(spikeProb)) < spikeProb
+
+def spike_trig_avg(stim,spikes,dt,window_width):
+
+	window = np.arange(0,int(window_width / dt),1)
+	#truncate spikes in first window timesteps
+	spike_indices=np.where(spikes[len(window):]==1)[0].flatten()
+	spike_triggered_avg=[]
+	for t in window:
+		stim_sum_i=[]
+		for i in spike_indices:
+			#undo truncation when indexing from stimulus
+			stim_sum_i.append(stim[(i+len(window))-t])
+		spike_triggered_avg.append(np.average(stim_sum_i))
+
+	spike_triggered_avg=np.array(spike_triggered_avg).flatten()/len(spike_indices)
+
+	return -1.0*window*dt, spike_triggered_avg
+
+def two():
+
+	T=2.0
+	dt=0.001
+	mean=0
+	std=1
+	seed=3
+
+	#generate noisy signal with gaussian sampled numbers
+	rng=np.random.RandomState(seed=seed)
+	noise=white_noise(mean,std,T,dt,rng)
+	t=np.arange(0,T,dt)
+
+	#generate colored noise by convolving the noise signal with a gaussian
+	sigma=0.020
+	G = np.exp(-(t-np.average(t))**2/(2*sigma**2))     
+	G = G / sum(G)
+	colored_noise=np.convolve(noise,G,'same')
+
+	#feed colored noise into Bryan's spike generator
+	spikes=synthetic_neuron(noise,rng)
+	smooth_spikes=synthetic_neuron(colored_noise,rng)
+	rate=spikes.sum()/T
+	smooth_rate=smooth_spikes.sum()/T
+
+	#calculate the spike-triggered average
+	window_width=0.100
+	window, sta = spike_trig_avg(noise,spikes,dt,window_width)
+	smooth_window, smooth_sta = spike_trig_avg(colored_noise,smooth_spikes,dt,window_width)
+
+	# #Plot the spike-triggered average
+	# fig=plt.figure(figsize=(16,8))
+	# ax=fig.add_subplot(111)
+	# ax.plot(smooth_window,smooth_sta)
+	# ax.set_xlabel('time (seconds)')
+	# ax.set_ylabel('spike-triggered average')
+	# plt.show()
+
+	kernel = rate * sta / std**2
+	smooth_kernel = smooth_rate * smooth_sta / std**2
+
+	LNP = np.convolve(noise, kernel, mode='same')
+	smooth_LNP = np.convolve(colored_noise, smooth_kernel, mode='same')
+
+	#Plot the white noise signal together with the LNP rate prediction
+	fig=plt.figure(figsize=(16,16))
+	ax=fig.add_subplot(211)
+	ax.plot(t,noise,label='white noise signal')
+	ax.plot(t,LNP,label='LNP model rate prediction')
+	ax.set_xlim(0,T)
+	legend=ax.legend(loc='best',shadow=True)
+	ax.set_xlabel('time (seconds)')
+	ax.set_ylabel('value')
+
+	ax=fig.add_subplot(212)
+	ax.plot(t,colored_noise,label='smoothed white noise signal')
+	ax.plot(t,smooth_LNP,label='LNP model rate prediction')
+	ax.set_xlim(0,T)
+	legend=ax.legend(loc='best',shadow=True)
+	ax.set_xlabel('time (seconds)')
+	ax.set_ylabel('value')
+	plt.show()
+
+# one()
+two()

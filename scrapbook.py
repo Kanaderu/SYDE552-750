@@ -1,3 +1,10 @@
+n_filters = np.arange(16,2*n_conv_layers+16,2,dtype=np.float32) # number of convolutional filters to use at layer_i
+pool_size = 3 * np.ones(n_conv_layers,dtype=np.float32) # square size of pooling window at layer_i
+kernel_size = np.arange(1,2*n_conv_layers,2,dtype=np.float32)[::-1] # square size of kernel at layer_i
+dropout_frac = 0.5 * np.ones(shape=n_conv_layers+n_dense_layers,dtype=np.float32)# dropout fraction at layer_i
+dense_size = 512 * np.ones(shape=n_dense_layers,dtype=np.float32) # output dimension for dense layers
+
+
 #test merge with fake u1 layer
 model.add_node(Convolution2D(n_filters[0],1,1,
 				activation='linear',weights=v_1_matrix,trainable=False),

@@ -1,0 +1,43 @@
+Statistics for cifar10_graph_cnn_v4_krizhevsky
+
+layer	0
+mean_A_conv	nan
+std_A_conv	nan
+min_A_conv	nan
+max_A_conv	nan
+std_across_features_mean_A_conv	nan
+std_across_features_max_A_conv	nan
+
+layer	1
+mean_A_conv	nan
+std_A_conv	nan
+min_A_conv	nan
+max_A_conv	nan
+std_across_features_mean_A_conv	nan
+std_across_features_max_A_conv	nan
+
+layer	2
+mean_A_conv	nan
+std_A_conv	nan
+min_A_conv	nan
+max_A_conv	nan
+std_across_features_mean_A_conv	nan
+std_across_features_max_A_conv	nan
+
+layer	3
+mean_A_conv	nan
+std_A_conv	nan
+min_A_conv	nan
+max_A_conv	nan
+std_across_features_mean_A_conv	nan
+std_across_features_max_A_conv	nan
+mean_acoss_map0_A_max	nan
+std_acoss_map0_A_max	nan
+min_acoss_map0_A_max	nan
+max_acoss_map0_A_max	nan
+std_across_features_A_max_centerunit	nan
+mean_acoss_map0_A_max	nan
+std_acoss_map0_A_max	nan
+min_acoss_map0_A_max	nan
+max_acoss_map0_A_max	nan
+std_across_features_A_max_centerunit	nan
