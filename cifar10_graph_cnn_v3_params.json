@@ -1,0 +1,1 @@
+{"dense_size": [512, 10], "learning_rate": 0.01, "batch_size": 32, "epochs": 2, "n_filters": [16, 24, 32], "dropout_frac": [0.5, 0.5, 0.5], "decay": 1e-06, "nesterov": true, "pool_size": [3, 3, 3], "classes": 10, "kernel_size": [11, 7, 3], "momentum": 0.9}

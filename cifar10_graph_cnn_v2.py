@@ -127,17 +127,31 @@ def get_outputs(model, input_name, layer_name, X_batch):
     return my_outputs
 
 text_file = open("cifar10_graph_cnn_v2_stats.txt", "w")
+
+print ("Node Name \t mean activation \t std activation \t min,max activation \t \
+	 	||| across features: std(mean) \t std(std) \t std(min), std(max)\n\n")
+text_file.write("Node Name \t mean activation \t std activation \t min,max activation \t \
+	 	||| across features: std(mean) \t std(std) \t std(min), std(max)\n")
+
 for the_node in model.nodes:
 	A = get_outputs(model,'input',the_node,X_test[:test_datapoints])
-	print (the_node)
-	text_file.write('\n %s: \t' %the_node)
+	print (the_node,'\t')
+	print (np.average(A),'\t',np.std(A),'\t'np.min(A),'\t'np.max(A),'\t')
+	print ('|||')
+	print (np.std(np.average(A,axis=1)),'\t')
+	print (np.std(np.std(A,axis=1)),'\t')
+	print (np.std(np.min(A,axis=1)),'\t')
+	print (np.std(np.min(A,axis=1)),'\t')
+	print (np.std(np.max(A,axis=1)),'\t')
+	text_file.write(the_node,'\t')
+	text_file.write(np.average(A),'\t',np.std(A),'\t',np.min(A),'\t',np.max(A),'\t')
+	text_file.write('|||')
+	text_file.write(np.std(np.average(A,axis=1)),'\t')
+	text_file.write(np.std(np.std(A,axis=1)),'\t')
+	text_file.write(np.std(np.min(A,axis=1)),'\t')
+	text_file.write(np.std(np.min(A,axis=1)),'\t')
+	text_file.write(np.std(np.max(A,axis=1)),'\t')
 	# for i in range(len(A)):
 	# 	print ("feature_map", i)
 	# 	print ('mean', np.average(A[i]) ,'max', np.max(A[i]), 'std', np.std(A[i]))
-	print ('std(mean)', np.std(np.average(A,axis=1)))
-	text_file.write(' std(mean): %s' %np.std(np.average(A,axis=1)))
-	print ('std(max)',np.std(np.max(A,axis=1)))
-	text_file.write(' std(max): %s' %np.std(np.max(A,axis=1)))
-	print ('std(std)', np.std(np.std(A,axis=1)))
-	text_file.write(' std(std): %s' %np.std(np.std(A,axis=1)))
 text_file.close()

@@ -1,0 +1,31 @@
+Layer #
+	within all feature maps: mean(A) 	 std(A) 	 min(A) 	 max(A)
+	across all feature maps: std(mean) 	 std(max)
+	within avg pooled feature[0]: mean(mean(A_subset)) 	 std(mean(A_subset)) 	 min(mean(A_subset)) 	 max(mean(A_subset))
+	across avg pooled feature[0]: std(mean(mean(A_subset))) 	 std(max(mean(A_subset)))
+	within max pooled feature[0]: mean(max(A_subset)) 	 std(max(A_subset)) 	 min(max(A_subset)) 	 max(max(A_subset))
+	across max pooled feature[0]: std(mean(max(A_subset))) 	 std(max(max(A_subset)))
+
+0
+0.211525	0.346995	-2.65427e-08	2.54504
+0.275468	0.694493
+0.00306467	0.0180098	-6.0536e-09	0.339919
+0.0033285	0.074241
+0.0122448	0.0515563	-6.0536e-09	0.887937
+0.0104324	0.16297
+
+1
+0.222466	0.376066	-5.54719e-08	2.91563
+0.323035	0.681727
+0.0435448	0.0678442	-4.13921e-09	0.625824
+0.0139868	0.124908
+0.126542	0.143277	0.0	1.00841
+0.0287845	0.189859
+
+2
+0.06363	0.168849	-3.94648e-08	1.84557
+0.13977	0.418157
+0.026654	0.0540873	-3.49246e-09	0.376237
+0.0101765	0.096804
+0.0819098	0.123372	-3.49246e-09	0.697588
+0.0210515	0.147096
