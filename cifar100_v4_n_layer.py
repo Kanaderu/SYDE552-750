@@ -12,8 +12,8 @@ import json
 import csv
 
 # Theano configuration
-# theano.config.floatX = 'float32'
-# theano.config.device = 'gpu'
+theano.config.floatX = 'float32'
+theano.config.device = 'gpu'
 # import theano.sandbox.cuda
 # theano.sandbox.cuda.use("gpu")
 
@@ -36,13 +36,13 @@ image_dim=(shapez,shapex,shapey)
 filename='cifar100_v4_n_layer'
 batch_size = 32
 classes = 100
-epochs = 10
+epochs = 50
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
-train_datapoints=500
-test_datapoints=300
+train_datapoints=50000
+test_datapoints=30000
 n_conv_layers=5
 n_dense_layers=3
 n_filters = [16,18,20,22,24] # number of feature maps at layer_i, len(n_conv_layers)

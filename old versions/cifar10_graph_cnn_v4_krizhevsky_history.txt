@@ -1,0 +1,1 @@
+{'loss': [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan], 'val_loss': [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan], 'batch': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 'size': [125, 125, 125, 125, 125, 125, 125, 125, 125, 125]}

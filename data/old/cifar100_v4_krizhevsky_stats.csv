@@ -1,0 +1,41 @@
+Statistics for cifar100_v4_krizhevsky
+
+layer	0
+mean_A_conv	0.604541
+std_A_conv	1.17913
+max_A_conv absolute, relative	4.22851	6.99458
+std_across_features_mean_A_conv  absolute, relative	1.17706	1.94704
+std_across_features_max_A_conv absolute, relative	1.30855	2.16454
+
+layer	1
+mean_A_conv	2.89581
+std_A_conv	5.77455
+max_A_conv absolute, relative	24.2873	8.38705
+std_across_features_mean_A_conv  absolute, relative	5.76812	1.99189
+std_across_features_max_A_conv absolute, relative	6.34464	2.19097
+
+layer	2
+mean_A_conv	11.7077
+std_A_conv	26.7392
+max_A_conv absolute, relative	126.796	10.8302
+std_across_features_mean_A_conv  absolute, relative	26.7213	2.28237
+std_across_features_max_A_conv absolute, relative	28.692	2.4507
+
+layer	3
+mean_A_conv	151.842
+std_A_conv	519.537
+max_A_conv absolute, relative	2264.18	14.9115
+std_across_features_mean_A_conv  absolute, relative	519.488	3.42125
+std_across_features_max_A_conv absolute, relative	526.451	3.4671
+
+layer	0
+mean_acoss_map0_A_max absolute, relative	8.91228e-08	2.95075e-08
+std_acoss_map0_A_max absolute, relative	2.31004e-09	7.64826e-10
+max_acoss_map0_A_max absolute, relative	9.26636e-08	3.06798e-08
+std_across_features_A_max_centerunit absolute, relative	5.80154	1.92082
+
+layer	1
+mean_acoss_map0_A_max absolute, relative	78.5017	6.26702
+std_acoss_map0_A_max absolute, relative	2.6829	0.214183
+max_acoss_map0_A_max absolute, relative	82.8985	6.61803
+std_across_features_A_max_centerunit absolute, relative	27.6212	2.20508

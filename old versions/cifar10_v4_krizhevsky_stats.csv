@@ -1,0 +1,43 @@
+Statistics for cifar10_v4_krizhevsky
+
+layer	0
+mean_A_conv	0.573314
+std_A_conv	1.04004
+min_A_conv	-1.44479e-08
+max_A_conv	4.32265
+std_across_features_mean_A_conv	1.03591
+std_across_features_max_A_conv	1.18085
+
+layer	1
+mean_A_conv	1.39472
+std_A_conv	2.49779
+min_A_conv	-2.24449e-08
+max_A_conv	10.0354
+std_across_features_mean_A_conv	2.48952
+std_across_features_max_A_conv	2.80136
+
+layer	2
+mean_A_conv	2.81149
+std_A_conv	4.42371
+min_A_conv	-2.14229e-07
+max_A_conv	19.172
+std_across_features_mean_A_conv	4.41351
+std_across_features_max_A_conv	4.81803
+
+layer	3
+mean_A_conv	14.685
+std_A_conv	26.5424
+min_A_conv	-3.96191e-07
+max_A_conv	95.3559
+std_across_features_mean_A_conv	26.5364
+std_across_features_max_A_conv	27.0439
+mean_acoss_map0_A_max	9.61823e-09
+std_acoss_map0_A_max	7.22622e-09
+min_acoss_map0_A_max	-8.84136e-09
+max_acoss_map0_A_max	1.97689e-08
+std_across_features_A_max_centerunit	2.5951
+mean_acoss_map0_A_max	0.000142096
+std_acoss_map0_A_max	0.000264836
+min_acoss_map0_A_max	1.62795e-08
+max_acoss_map0_A_max	0.00089542
+std_across_features_A_max_centerunit	4.66054

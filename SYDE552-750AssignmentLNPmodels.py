@@ -200,27 +200,26 @@ def two():
 
 	#Plot the white noise signal together with the LNP rate prediction
 	fig=plt.figure(figsize=(16,16))
-	ax=fig.add_subplot(211)
+	ax=fig.add_subplot(311)
 	ax.plot(t,noise,label='white noise signal')
 	ax.plot(t,LNP,label='LNP model rate prediction')
-	ax.set_xlim(0,T)
+	# ax.set_xlim(0,T)
 	legend=ax.legend(loc='best',shadow=True)
-	ax.set_xlabel('time (seconds)')
+	# ax.set_xlabel('time (seconds)')
 	ax.set_ylabel('value')
-	ax=fig.add_subplot(212)
+	ax=fig.add_subplot(312)
 	ax.plot(t,colored_noise,label='smoothed white noise signal')
 	ax.plot(t,smooth_LNP,label='LNP model rate prediction')
-	ax.set_xlim(0,T)
+	# ax.set_xlim(0,T)
 	legend=ax.legend(loc='best',shadow=True)
-	ax.set_xlabel('time (seconds)')
+	# ax.set_xlabel('time (seconds)')
 	ax.set_ylabel('value')
-	plt.show()
 
 	#Calculate the 'multi-trial' (or 'time-varying') firing rate
 	#by counting the number of spikes in a small time window
 	#accross all trials
 	bin_width=0.010
-	n_trials=250
+	n_trials=50
 	multitrial_binned_rate=[]
 	for i in range(int(T/bin_width)):
 		bin_i=0
@@ -232,31 +231,54 @@ def two():
 		multitrial_binned_rate.append(bin_i)
 
 	#plot spike raster and multitrial firing rate
-	fig=plt.figure(figsize=(16,8))
-	ax=fig.add_subplot(111)
+	# fig=plt.figure(figsize=(16,8))
+	ax=fig.add_subplot(313)
 	ax.bar(np.arange(0,T,bin_width),multitrial_binned_rate,width=bin_width)
-	ax.set_xlim(0,T)
-	ax.set_xlabel('time')
+	# ax.set_xlim(0,T)
+	ax.set_xlabel('time (seconds)')
 	ax.set_ylabel('multi-trial binned spike rate')
 	plt.show()
 
-	#curve fit the nonlinearity to a logistic function - it's inaccurate even at 250 trials
-	def func(t, a, b, c):
+	#curve fit the nonlinearity to a logistic or sigmoid function
+	def logistic(t, a, b, c):
 	    return a / (b + np.exp(c*t))
+	def relu(t, threshold, m):
+	    return m * t * (t > threshold)
 	LNP_subset = LNP[::bin_width/dt]*np.average(multitrial_binned_rate) #<r> scaling
-	popt, pcov = curve_fit(func, LNP_subset, multitrial_binned_rate)
+	popt, pcov = curve_fit(logistic, LNP_subset, multitrial_binned_rate)
+	popt2, pcov2 = curve_fit(relu, LNP_subset, multitrial_binned_rate)
 	t_odd=np.linspace(np.min(LNP_subset),np.max(LNP_subset),100)
-	fitted_curve=func(t_odd,*popt)
+	fitted_logistic=logistic(t_odd,*popt)
+	fitted_relu=relu(t_odd,*popt2)
+	#curve fit to smoothed LNP prediction
+	LNP_smooth_subset = smooth_LNP[::bin_width/dt]*np.average(multitrial_binned_rate)
+	popt_smooth, pcov_smooth = curve_fit(logistic, LNP_smooth_subset, multitrial_binned_rate)
+	popt2_smooth, pcov2_smooth = curve_fit(relu, LNP_smooth_subset, multitrial_binned_rate)
+	t_odd_smooth=np.linspace(np.min(LNP_smooth_subset),np.max(LNP_smooth_subset),100)
+	fitted_logistic_smooth=logistic(t_odd_smooth,*popt_smooth)
+	fitted_relu_smooth=relu(t_odd_smooth,*popt2_smooth)
 
 	#plot LNP rate prediction vs multitrial firing rate
-	fig=plt.figure(figsize=(16,8))
-	ax=fig.add_subplot(111)
-	ax.scatter(LNP_subset,multitrial_binned_rate)
-	ax.plot(t_odd,fitted_curve)
+	fig=plt.figure(figsize=(16,16))
+	ax=fig.add_subplot(211)
+	ax.scatter(LNP_subset,multitrial_binned_rate,label="data")
+	ax.plot(t_odd,fitted_logistic,label='fitted logistic function, RMSE=%s'
+				%np.sqrt(np.average((fitted_logistic-multitrial_binned_rate)**2)))
+	ax.plot(t_odd,fitted_relu,label='fitted relu function, RMSE=%s'
+				%np.sqrt(np.average((fitted_relu-multitrial_binned_rate)**2)))
+	legend=ax.legend(loc='best',shadow=True)
+	# ax.set_xlabel('LNP rate prediction')
+	ax.set_ylabel('multi-trial firing rate')
+	ax=fig.add_subplot(212)
+	ax.scatter(LNP_smooth_subset,multitrial_binned_rate,label="data")
+	ax.plot(t_odd_smooth,fitted_logistic_smooth,label='smooth fitted logistic function, RMSE=%s'
+				%np.sqrt(np.average((fitted_logistic_smooth-multitrial_binned_rate)**2)))
+	ax.plot(t_odd_smooth,fitted_relu_smooth,label='smooth fitted relu function, RMSE=%s'
+				%np.sqrt(np.average((fitted_relu_smooth-multitrial_binned_rate)**2)))
+	legend=ax.legend(loc='best',shadow=True)
 	ax.set_xlabel('LNP rate prediction')
-	ax.set_ylabel('multi-trial binned spike rate')
+	ax.set_ylabel('multi-trial firing rate')
 	plt.show()
-
 
 
 # one()
