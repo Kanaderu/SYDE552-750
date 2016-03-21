@@ -6,6 +6,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
+from scipy.optimize import curve_fit
 plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 20
 
@@ -112,7 +113,7 @@ def one():
 	#the mean approaches 1 as t_{ref} appoaches 0, but the std increases slightly
 
 
-def white_noise(mean=0,std=1,T=100,dt=0.001,rng=np.random.RandomState()):
+def white_noise(mean=0.0,std=1.0,T=100,dt=0.001,rng=np.random.RandomState()):
 	return rng.normal(mean,std,T/dt)
 
 def synthetic_neuron(drive,rng):
@@ -154,10 +155,10 @@ def spike_trig_avg(stim,spikes,dt,window_width):
 
 def two():
 
-	T=2.0
+	T=1.0
 	dt=0.001
-	mean=0
-	std=1
+	mean=0.0
+	std=1.0
 	seed=3
 
 	#generate noisy signal with gaussian sampled numbers
@@ -190,8 +191,9 @@ def two():
 	# ax.set_ylabel('spike-triggered average')
 	# plt.show()
 
+	#the math says to scale with <r> = rate, but this overshoots for smoothed noise
 	kernel = rate * sta / std**2
-	smooth_kernel = smooth_rate * smooth_sta / std**2
+	smooth_kernel = smooth_sta / std**2
 
 	LNP = np.convolve(noise, kernel, mode='same')
 	smooth_LNP = np.convolve(colored_noise, smooth_kernel, mode='same')
@@ -205,7 +207,6 @@ def two():
 	legend=ax.legend(loc='best',shadow=True)
 	ax.set_xlabel('time (seconds)')
 	ax.set_ylabel('value')
-
 	ax=fig.add_subplot(212)
 	ax.plot(t,colored_noise,label='smoothed white noise signal')
 	ax.plot(t,smooth_LNP,label='LNP model rate prediction')
@@ -214,6 +215,49 @@ def two():
 	ax.set_xlabel('time (seconds)')
 	ax.set_ylabel('value')
 	plt.show()
+
+	#Calculate the 'multi-trial' (or 'time-varying') firing rate
+	#by counting the number of spikes in a small time window
+	#accross all trials
+	bin_width=0.010
+	n_trials=250
+	multitrial_binned_rate=[]
+	for i in range(int(T/bin_width)):
+		bin_i=0
+		for j in range(n_trials):
+			spikes=synthetic_neuron(noise,rng)
+			spike_times=np.where(spikes==True)[0]*dt
+			for t in spike_times:
+				bin_i+=(i*bin_width<=t<(i+1)*bin_width)
+		multitrial_binned_rate.append(bin_i)
+
+	#plot spike raster and multitrial firing rate
+	fig=plt.figure(figsize=(16,8))
+	ax=fig.add_subplot(111)
+	ax.bar(np.arange(0,T,bin_width),multitrial_binned_rate,width=bin_width)
+	ax.set_xlim(0,T)
+	ax.set_xlabel('time')
+	ax.set_ylabel('multi-trial binned spike rate')
+	plt.show()
+
+	#curve fit the nonlinearity to a logistic function - it's inaccurate even at 250 trials
+	def func(t, a, b, c):
+	    return a / (b + np.exp(c*t))
+	LNP_subset = LNP[::bin_width/dt]*np.average(multitrial_binned_rate) #<r> scaling
+	popt, pcov = curve_fit(func, LNP_subset, multitrial_binned_rate)
+	t_odd=np.linspace(np.min(LNP_subset),np.max(LNP_subset),100)
+	fitted_curve=func(t_odd,*popt)
+
+	#plot LNP rate prediction vs multitrial firing rate
+	fig=plt.figure(figsize=(16,8))
+	ax=fig.add_subplot(111)
+	ax.scatter(LNP_subset,multitrial_binned_rate)
+	ax.plot(t_odd,fitted_curve)
+	ax.set_xlabel('LNP rate prediction')
+	ax.set_ylabel('multi-trial binned spike rate')
+	plt.show()
+
+
 
 # one()
 two()
