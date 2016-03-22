@@ -33,7 +33,7 @@ samples_test = X_test.shape[0]
 image_dim=(shapez,shapex,shapey)
 
 # Parameters
-filename='cifar100_v4_krizhevsky_pool=3'
+filename='cifar100_v5_krizhevsky_pool=3'
 batch_size = 128
 classes = 100
 epochs = 20
