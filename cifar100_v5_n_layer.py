@@ -38,13 +38,13 @@ image_dim=(shapez,shapex,shapey)
 filename='cifar100_v5_n_layer_pool=4'
 batch_size = 32
 classes = 100
-epochs = 20
+epochs = 2
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
-train_datapoints=5000
-test_datapoints=3000
+train_datapoints=50
+test_datapoints=30
 n_conv_layers=5
 n_dense_layers=3
 n_filters = [48,48,48,48,48] # number of feature maps at layer_i, len(n_conv_layers)
@@ -187,7 +187,7 @@ def output_stuff(params, model, history):
 
 	#architecture
 	json_string = model.to_json()
-	open(filename+'_model', 'w').write(json_string)
+	open(filename+'_model.json', 'w').write(json_string)
 
 	#weights
 	model.save_weights(filename+'_weights.h5')

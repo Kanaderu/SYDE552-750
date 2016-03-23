@@ -160,6 +160,7 @@ def two():
 	mean=0.0
 	std=1.0
 	seed=3
+	r0=0.0
 
 	#generate noisy signal with gaussian sampled numbers
 	rng=np.random.RandomState(seed=seed)
@@ -195,8 +196,8 @@ def two():
 	kernel = rate * sta / std**2
 	smooth_kernel = smooth_sta / std**2
 
-	LNP = np.convolve(noise, kernel, mode='same')
-	smooth_LNP = np.convolve(colored_noise, smooth_kernel, mode='same')
+	LNP = r0 + np.convolve(noise, kernel, mode='same')
+	smooth_LNP = r0 + np.convolve(colored_noise, smooth_kernel, mode='same')
 
 	#Plot the white noise signal together with the LNP rate prediction
 	fig=plt.figure(figsize=(16,16))
@@ -219,9 +220,10 @@ def two():
 	#by counting the number of spikes in a small time window
 	#accross all trials
 	bin_width=0.010
-	n_trials=50
+	n_trials=200
 	MFR=[]
 	for i in range(int(T/bin_width)):
+		print 'bin %s/%s' %(i,int(T/bin_width))
 		bin_i=0
 		for j in range(n_trials):
 			spikes=synthetic_neuron(noise,rng)
@@ -239,13 +241,9 @@ def two():
 	ax.set_ylabel('multi-trial binned spike rate')
 	plt.show()
 
-	#curve fit the nonlinearity to a logistic or sigmoid function
-	def logistic(t, a, b, c):
-	    return a / (b + np.exp(c*t))
-	def relu(t, threshold, m):
-	    return m * t * (t > threshold)
 	#bin (LNP,MFR) points the clarify the shape of the activation function
 	LNP_subset = LNP[::bin_width/dt]*np.average(MFR) #<r> scaling
+	# LNP_smooth_subset = smooth_LNP[::bin_width/dt]*np.average(MFR)
 	n_smoothing_bins=10
 	LNP_binned=[]
 	MFR_binned=[]
@@ -255,30 +253,45 @@ def two():
 		MFR_binned.append(np.average(MFR[i*len(MFR)/n_smoothing_bins:
 							(i+1)*len(MFR)/n_smoothing_bins]))
 
+	#curve fit the nonlinearity to a logistic or sigmoid function
+	def logistic(t, a, b, c):
+	    return a / (b + np.exp(c*t))
+	def relu(t, threshold, m):
+	    return m * t * (t > threshold)
 	# popt, pcov = curve_fit(logistic, LNP_subset, MFR)
 	# popt2, pcov2 = curve_fit(relu, LNP_subset, MFR)
 	# t_odd=np.linspace(np.min(LNP_subset),np.max(LNP_subset),100)
 	# fitted_logistic=logistic(t_odd,*popt)
 	# fitted_relu=relu(t_odd,*popt2)
-	# #curve fit to smoothed LNP prediction
-	# LNP_smooth_subset = smooth_LNP[::bin_width/dt]*np.average(MFR)
+
 	# popt_smooth, pcov_smooth = curve_fit(logistic, LNP_smooth_subset, MFR)
 	# popt2_smooth, pcov2_smooth = curve_fit(relu, LNP_smooth_subset, MFR)
 	# t_odd_smooth=np.linspace(np.min(LNP_smooth_subset),np.max(LNP_smooth_subset),100)
 	# fitted_logistic_smooth=logistic(t_odd_smooth,*popt_smooth)
 	# fitted_relu_smooth=relu(t_odd_smooth,*popt2_smooth)
 
+	ind_vals=np.linspace(np.min(LNP_binned),np.max(LNP_binned),n_smoothing_bins)
+	popt_binned, pcov_binned = curve_fit(logistic, LNP_binned, MFR_binned)
+	popt2_binned, pcov2_binned = curve_fit(relu, LNP_binned, MFR_binned)
+	fitted_logistic_binned=logistic(ind_vals,*popt_binned)
+	fitted_relu_binned=relu(ind_vals,*popt2_binned)
+
 	#plot LNP rate prediction vs multitrial firing rate
 	fig=plt.figure(figsize=(16,16))
 	ax=fig.add_subplot(211)
-	ax.scatter(LNP_binned,MFR_binned,label="data")
+	ax.scatter(LNP_binned,MFR_binned,label="data binned")
+	ax.plot(ind_vals,fitted_logistic_binned)
+				# label='fitted binned logistic, RMSE=%s'
+				# %np.sqrt(np.average((fitted_logistic_binned-MFR_binned)**2)))
+	ax.plot(ind_vals,fitted_relu_binned)
+				# label='fitted binned relu, RMSE=%s'
+				# %np.sqrt(np.average((fitted_relu_binned-MFR_binned)**2)))
+	# ax.scatter(LNP_subset,MFR,label="data")
 	# ax.plot(t_odd,fitted_logistic,label='fitted logistic function, RMSE=%s'
 	# 			%np.sqrt(np.average((fitted_logistic-MFR)**2)))
 	# ax.plot(t_odd,fitted_relu,label='fitted relu function, RMSE=%s'
 				# %np.sqrt(np.average((fitted_relu-MFR)**2)))
 	legend=ax.legend(loc='best',shadow=True)
-	# ax.set_xlabel('LNP rate prediction')
-	ax.set_ylabel('multi-trial firing rate')
 	# ax=fig.add_subplot(212)
 	# ax.scatter(LNP_smooth_subset,MFR,label="data")
 	# ax.plot(t_odd_smooth,fitted_logistic_smooth,label='smooth fitted logistic function, RMSE=%s'
@@ -286,8 +299,8 @@ def two():
 	# ax.plot(t_odd_smooth,fitted_relu_smooth,label='smooth fitted relu function, RMSE=%s'
 	# 			%np.sqrt(np.average((fitted_relu_smooth-MFR)**2)))
 	# legend=ax.legend(loc='best',shadow=True)
-	# ax.set_xlabel('LNP rate prediction')
-	# ax.set_ylabel('multi-trial firing rate')
+	ax.set_xlabel('LNP rate prediction')
+	ax.set_ylabel('multi-trial firing rate')
 	plt.show()
 
 

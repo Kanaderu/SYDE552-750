@@ -1,0 +1,616 @@
+\documentclass{article}
+
+    
+    
+    \usepackage{graphicx} % Used to insert images
+    \usepackage{adjustbox} % Used to constrain images to a maximum size 
+    \usepackage{color} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage{eurosym} % defines \euro
+    \usepackage[mathletters]{ucs} % Extended unicode (utf-8) support
+    \usepackage[utf8x]{inputenc} % Allow utf-8 characters in the tex document
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics 
+                         % to support a larger range 
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    \usepackage{booktabs}  % table support for pandoc > 1.12.2
+    \usepackage{ulem} % ulem is needed to support strikethroughs (\sout)
+    
+
+    
+    
+    \definecolor{orange}{cmyk}{0,0.4,0.8,0.2}
+    \definecolor{darkorange}{rgb}{.71,0.21,0.01}
+    \definecolor{darkgreen}{rgb}{.12,.54,.11}
+    \definecolor{myteal}{rgb}{.26, .44, .56}
+    \definecolor{gray}{gray}{0.45}
+    \definecolor{lightgray}{gray}{.95}
+    \definecolor{mediumgray}{gray}{.8}
+    \definecolor{inputbackground}{rgb}{.95, .95, .85}
+    \definecolor{outputbackground}{rgb}{.95, .95, .95}
+    \definecolor{traceback}{rgb}{1, .95, .95}
+    % ansi colors
+    \definecolor{red}{rgb}{.6,0,0}
+    \definecolor{green}{rgb}{0,.65,0}
+    \definecolor{brown}{rgb}{0.6,0.6,0}
+    \definecolor{blue}{rgb}{0,.145,.698}
+    \definecolor{purple}{rgb}{.698,.145,.698}
+    \definecolor{cyan}{rgb}{0,.698,.698}
+    \definecolor{lightgray}{gray}{0.5}
+    
+    % bright ansi colors
+    \definecolor{darkgray}{gray}{0.25}
+    \definecolor{lightred}{rgb}{1.0,0.39,0.28}
+    \definecolor{lightgreen}{rgb}{0.48,0.99,0.0}
+    \definecolor{lightblue}{rgb}{0.53,0.81,0.92}
+    \definecolor{lightpurple}{rgb}{0.87,0.63,0.87}
+    \definecolor{lightcyan}{rgb}{0.5,1.0,0.83}
+    
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+    
+    % Additional commands for more recent versions of Pandoc
+    \newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{{#1}}}
+    \newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{{#1}}}
+    \newcommand{\ImportTok}[1]{{#1}}
+    \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{{#1}}}}
+    \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{{#1}}}
+    \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{{#1}}}
+    \newcommand{\BuiltInTok}[1]{{#1}}
+    \newcommand{\ExtensionTok}[1]{{#1}}
+    \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{{#1}}}
+    \newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{{#1}}}
+    \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    
+    
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatability definitions
+    \def\gt{>}
+    \def\lt{<}
+    % Document parameters
+    \title{SYDE552-750AssignmentLNPmodels}
+    
+    
+    
+
+    % Pygments definitions
+    
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\expandafter\def\csname PY@tok@gd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gu\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\expandafter\def\csname PY@tok@gs\endcsname{\let\PY@bf=\textbf}
+\expandafter\def\csname PY@tok@gr\endcsname{\def\PY@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@cm\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@vg\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@m\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@go\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.53,0.53}{##1}}}
+\expandafter\def\csname PY@tok@ge\endcsname{\let\PY@it=\textit}
+\expandafter\def\csname PY@tok@vc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@il\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@cs\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.74,0.48,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gh\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@ni\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.60,0.60,0.60}{##1}}}
+\expandafter\def\csname PY@tok@nl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@no\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@na\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.49,0.56,0.16}{##1}}}
+\expandafter\def\csname PY@tok@nb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@ne\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.82,0.25,0.23}{##1}}}
+\expandafter\def\csname PY@tok@nf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@si\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@s2\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@vi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@nt\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nv\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@s1\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@kd\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@sh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sx\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@bp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c1\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@kc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@mf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@err\endcsname{\def\PY@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
+\expandafter\def\csname PY@tok@mb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ss\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sr\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@mo\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@mi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@gp\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@o\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kr\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@s\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@kp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@w\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\expandafter\def\csname PY@tok@kt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\expandafter\def\csname PY@tok@ow\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@sb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@k\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@se\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sd\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % Exact colors from NB
+    \definecolor{incolor}{rgb}{0.0, 0.0, 0.5}
+    \definecolor{outcolor}{rgb}{0.545, 0.0, 0.0}
+
+
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy 
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=blue,
+      linkcolor=darkorange,
+      citecolor=darkgreen,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+ \title{SYDE 552-750 Assignment: LNP Neurons}
+\author{Peter Duggins, Student ID 20610432}
+\date{\today}
+
+\begin{document}
+    
+\maketitle
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}20}]:} \PY{o}{\PYZpc{}}\PY{k}{pylab} inline
+         \PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k+kn}{as} \PY{n+nn}{np}
+         \PY{k+kn}{import} \PY{n+nn}{matplotlib.pyplot} \PY{k+kn}{as} \PY{n+nn}{plt}
+         \PY{k+kn}{import} \PY{n+nn}{scipy.signal}
+         \PY{k+kn}{from} \PY{n+nn}{scipy.optimize} \PY{k+kn}{import} \PY{n}{curve\PYZus{}fit}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{rcParams}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{lines.linewidth}\PY{l+s}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{4}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{rcParams}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{font.size}\PY{l+s}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{20}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Populating the interactive namespace from numpy and matplotlib
+    \end{Verbatim}
+
+\section{Spike Statistics}
+
+\subsection{Generate 50 10-second trials of Poisson spikes at 25 spikes/s with a 5ms absolute refractory period. To do this, draw samples from an appropriate ISI distribution.}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}21}]:} \PY{k}{def} \PY{n+nf}{generate\PYZus{}poisson\PYZus{}spikes}\PY{p}{(}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{trials}\PY{p}{,}\PY{n}{rate}\PY{p}{,}\PY{n}{rng}\PY{p}{)}\PY{p}{:}
+             
+         	\PY{c}{\PYZsh{}I\PYZsq{}ll implement the 5ms refractory period as using dt=5ms.}
+         	\PY{n}{spike\PYZus{}raster}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{n}{spike\PYZus{}times}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{trial} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{trials}\PY{p}{)}\PY{p}{:}
+         		\PY{n}{spike\PYZus{}raster\PYZus{}trial}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         		\PY{n}{spike\PYZus{}times\PYZus{}trial}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         		\PY{k}{for} \PY{n}{t} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{int}\PY{p}{(}\PY{n}{T}\PY{o}{/}\PY{n}{dt}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+         			\PY{n}{spike\PYZus{}here}\PY{o}{=}\PY{p}{(}\PY{n}{rng}\PY{o}{.}\PY{n}{rand}\PY{p}{(}\PY{p}{)}\PY{o}{\PYZlt{}}\PY{n}{rate}\PY{o}{*}\PY{n}{dt}\PY{p}{)}
+         			\PY{n}{spike\PYZus{}raster\PYZus{}trial}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{l+m+mi}{1}\PY{o}{*}\PY{n}{spike\PYZus{}here}\PY{p}{)}
+         			\PY{k}{if} \PY{n}{spike\PYZus{}here}\PY{p}{:}
+         				\PY{n}{spike\PYZus{}times\PYZus{}trial}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{t}\PY{o}{*}\PY{n}{dt}\PY{p}{)}
+         		\PY{n}{spike\PYZus{}raster}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{spike\PYZus{}raster\PYZus{}trial}\PY{p}{)}
+         		\PY{n}{spike\PYZus{}times}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{spike\PYZus{}times\PYZus{}trial}\PY{p}{)}
+         	\PY{k}{return} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{n}{spike\PYZus{}raster}\PY{p}{)}\PY{p}{,}\PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{n}{spike\PYZus{}times}\PY{p}{)}
+         
+         \PY{k}{def} \PY{n+nf}{get\PYZus{}ISI}\PY{p}{(}\PY{n}{spike\PYZus{}times}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{c}{\PYZsh{}calculate across all trials}
+         	\PY{n}{ISI}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{trial} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{spike\PYZus{}times}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+         		\PY{k}{for} \PY{n}{t} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{spike\PYZus{}times}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{:}
+         			\PY{n}{ISI}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{spike\PYZus{}times}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{[}\PY{n}{t}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{]}\PY{o}{\PYZhy{}}\PY{n}{spike\PYZus{}times}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{[}\PY{n}{t}\PY{p}{]}\PY{p}{)}
+         	\PY{k}{return} \PY{n}{ISI}
+         
+         \PY{k}{def} \PY{n+nf}{get\PYZus{}CV}\PY{p}{(}\PY{n}{ISI}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{k}{return} \PY{n}{np}\PY{o}{.}\PY{n}{std}\PY{p}{(}\PY{n}{ISI}\PY{p}{)}\PY{o}{/}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{ISI}\PY{p}{)}
+         
+         \PY{k}{def} \PY{n+nf}{get\PYZus{}fano\PYZus{}factor}\PY{p}{(}\PY{n}{spike\PYZus{}raster}\PY{p}{,}\PY{n}{t\PYZus{}range}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{count}\PY{o}{=}\PY{p}{[}\PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{raster}\PY{p}{[}\PY{p}{:}\PY{n}{t\PYZus{}range}\PY{p}{]}\PY{p}{)} \PY{k}{for} \PY{n}{raster} \PY{o+ow}{in} \PY{n}{spike\PYZus{}raster}\PY{p}{]}
+         	\PY{n}{avg}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{count}\PY{p}{)}
+         	\PY{k}{if} \PY{n}{avg} \PY{o}{!=} \PY{l+m+mi}{0}\PY{p}{:}
+         		\PY{n}{var}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{var}\PY{p}{(}\PY{n}{count}\PY{p}{)}
+         	\PY{k}{else}\PY{p}{:}
+         		\PY{n}{var}\PY{o}{=}\PY{l+m+mi}{0}
+         	\PY{k}{return} \PY{n}{var}\PY{o}{/}\PY{n}{avg}
+         
+         \PY{k}{def} \PY{n+nf}{get\PYZus{}fano\PYZus{}factor\PYZus{}list}\PY{p}{(}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{trials}\PY{p}{,}\PY{n}{rate}\PY{p}{,}\PY{n}{rng}\PY{p}{,}\PY{n}{n\PYZus{}FFs}\PY{p}{,}\PY{n}{t\PYZus{}range}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{FF\PYZus{}list}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{n\PYZus{}FFs}\PY{p}{)}\PY{p}{:}
+         		\PY{n}{spike\PYZus{}raster}\PY{p}{,} \PY{n}{spike\PYZus{}times} \PY{o}{=} \PY{n}{generate\PYZus{}poisson\PYZus{}spikes}\PY{p}{(}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{trials}\PY{p}{,}\PY{n}{rate}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         		\PY{n}{FF\PYZus{}i}\PY{o}{=}\PY{n}{get\PYZus{}fano\PYZus{}factor}\PY{p}{(}\PY{n}{spike\PYZus{}raster}\PY{p}{,}\PY{n}{t\PYZus{}range}\PY{p}{)}
+         		\PY{n}{FF\PYZus{}list}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{FF\PYZus{}i}\PY{p}{)}
+         	\PY{k}{return} \PY{n}{FF\PYZus{}list}
+\end{Verbatim}
+
+\subsection{Plot the spike raster (1s) and the ISI histogram (10ms bins from 0-500ms}
+
+\subsection{Calculate the coefficient of variation of the spike rate over all trials.}
+
+\subsection{Calculate the Fano factor for the first 100ms. Comment on the consistency of the Fano factor over multiple runs. Comment on the difference in Fano factors with 5ms vs 1ms refractory period.}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}22}]:} \PY{k}{def} \PY{n+nf}{one}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mi}{10} \PY{c}{\PYZsh{}seconds}
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.005}
+         	\PY{n}{trials}\PY{o}{=}\PY{l+m+mi}{50}
+         	\PY{n}{rate}\PY{o}{=}\PY{l+m+mi}{25} \PY{c}{\PYZsh{}Hz}
+         	\PY{n}{seed}\PY{o}{=}\PY{l+m+mi}{3}
+         	\PY{n}{t}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{)}
+         	\PY{n}{rng}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{RandomState}\PY{p}{(}\PY{n}{seed}\PY{o}{=}\PY{n}{seed}\PY{p}{)}
+         
+         	\PY{n}{spike\PYZus{}raster}\PY{p}{,} \PY{n}{spike\PYZus{}times} \PY{o}{=} \PY{n}{generate\PYZus{}poisson\PYZus{}spikes}\PY{p}{(}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{trials}\PY{p}{,}\PY{n}{rate}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         
+         	\PY{n}{ISI} \PY{o}{=} \PY{n}{get\PYZus{}ISI}\PY{p}{(}\PY{n}{spike\PYZus{}times}\PY{p}{)}
+         	\PY{n}{n\PYZus{}bins}\PY{o}{=}\PY{n+nb}{int}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{max}\PY{p}{(}\PY{n}{ISI}\PY{p}{)}\PY{o}{/}\PY{p}{(}\PY{l+m+mi}{2}\PY{o}{*}\PY{n}{dt}\PY{p}{)}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Plot the spike raster for first 1.0 seconds}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{16}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{211}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{eventplot}\PY{p}{(}\PY{n}{spike\PYZus{}times}\PY{p}{,}\PY{n}{colors}\PY{o}{=}\PY{p}{[}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{]}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlim}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mf}{1.0}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylim}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{trials}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time (s)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{neuron}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}plot ISI histogram}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{212}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{hist}\PY{p}{(}\PY{n}{ISI}\PY{p}{,}\PY{n}{n\PYZus{}bins}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlim}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{dt}\PY{o}{*}\PY{l+m+mi}{100}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{ISI (s)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{frequency}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+         
+         	\PY{n}{CV} \PY{o}{=} \PY{n}{get\PYZus{}CV}\PY{p}{(}\PY{n}{ISI}\PY{p}{)}
+         	\PY{k}{print} \PY{l+s}{\PYZdq{}}\PY{l+s}{The coefficient of variation is}\PY{l+s}{\PYZdq{}}\PY{p}{,} \PY{n}{CV}
+         
+         	\PY{n}{t\PYZus{}range}\PY{o}{=}\PY{n+nb}{int}\PY{p}{(}\PY{l+m+mf}{0.100}\PY{o}{/}\PY{n}{dt}\PY{p}{)}
+         	\PY{n}{n\PYZus{}FFs} \PY{o}{=} \PY{l+m+mi}{50}
+         
+         	\PY{n}{FF\PYZus{}list\PYZus{}1} \PY{o}{=} \PY{n}{get\PYZus{}fano\PYZus{}factor\PYZus{}list}\PY{p}{(}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{trials}\PY{p}{,}\PY{n}{rate}\PY{p}{,}\PY{n}{rng}\PY{p}{,}\PY{n}{n\PYZus{}FFs}\PY{p}{,}\PY{n}{t\PYZus{}range}\PY{p}{)}
+         	\PY{k}{print} \PY{l+s}{\PYZdq{}}\PY{l+s}{Fano Factor for \PYZdl{}t\PYZus{}\PYZob{}ref\PYZcb{}=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZdl{}, }\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{ trials:}\PY{l+s}{\PYZdq{}} \PY{o}{\PYZpc{}}\PY{p}{(}\PY{n}{dt}\PY{p}{,} \PY{n}{n\PYZus{}FFs}\PY{p}{)}
+         	\PY{k}{print} \PY{l+s}{\PYZdq{}}\PY{l+s}{mean: }\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZdq{}} \PY{o}{\PYZpc{}}\PY{k}{np}.average(FF\PYZus{}list\PYZus{}1), \PYZdq{}std: \PYZpc{}s\PYZdq{} \PYZpc{}np.std(FF\PYZus{}list\PYZus{}1)
+         
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.001}
+         	\PY{n}{FF\PYZus{}list\PYZus{}2} \PY{o}{=} \PY{n}{get\PYZus{}fano\PYZus{}factor\PYZus{}list}\PY{p}{(}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{trials}\PY{p}{,}\PY{n}{rate}\PY{p}{,}\PY{n}{rng}\PY{p}{,}\PY{n}{n\PYZus{}FFs}\PY{p}{,}\PY{n}{t\PYZus{}range}\PY{p}{)}
+         	\PY{k}{print} \PY{l+s}{\PYZdq{}}\PY{l+s}{Fano Factor for \PYZdl{}t\PYZus{}\PYZob{}ref\PYZcb{}=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZdl{}, }\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{ trials:}\PY{l+s}{\PYZdq{}} \PY{o}{\PYZpc{}}\PY{p}{(}\PY{n}{dt}\PY{p}{,} \PY{n}{n\PYZus{}FFs}\PY{p}{)}
+         	\PY{k}{print} \PY{l+s}{\PYZdq{}}\PY{l+s}{mean: }\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZdq{}} \PY{o}{\PYZpc{}}\PY{k}{np}.average(FF\PYZus{}list\PYZus{}2), \PYZdq{}std: \PYZpc{}s\PYZdq{} \PYZpc{}np.std(FF\PYZus{}list\PYZus{}2)
+             
+         \PY{n}{one}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentLNPmodels_files/SYDE552-750AssignmentLNPmodels_8_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+The coefficient of variation is 0.919684065222
+Fano Factor for \$t\_\{ref\}=0.005\$, 50 trials:
+mean: 0.839471102108 std: 0.176345519687
+Fano Factor for \$t\_\{ref\}=0.001\$, 50 trials:
+mean: 0.942815010008 std: 0.191469341661
+    \end{Verbatim}
+
+The Fano factor is significantly below 1 with a 5ms refractory period (mean=0.83), but will sometimes reach the expected value of 1.0 due to its high standard deviation across trials (std=0.18).
+
+A smaller refractory period of 1ms brings the Fano factor significantly closer to 1 (mean=0.94), but the standard deviation across trials remains as high (or higher) as with the long refractory period (std=0.19).
+
+\section{LNP Models}
+
+\subsection{Create a linear poisson model of the synthetic neuron given in the previous assignment (Neuron Responses). To do this, convolve white noise (dt=0.001s, mean=0.0, std=1.0) with a kernel calculated using the spike-triggered average of that signal (use the STA method from the previous assignment). Plot 1s of the white noise stimulus alongside the firing rate prediction from the linear poisson model.}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}23}]:} \PY{k}{def} \PY{n+nf}{white\PYZus{}noise}\PY{p}{(}\PY{n}{mean}\PY{o}{=}\PY{l+m+mf}{0.0}\PY{p}{,}\PY{n}{std}\PY{o}{=}\PY{l+m+mf}{1.0}\PY{p}{,}\PY{n}{T}\PY{o}{=}\PY{l+m+mi}{100}\PY{p}{,}\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.001}\PY{p}{,}\PY{n}{rng}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{RandomState}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+         	\PY{k}{return} \PY{n}{rng}\PY{o}{.}\PY{n}{normal}\PY{p}{(}\PY{n}{mean}\PY{p}{,}\PY{n}{std}\PY{p}{,}\PY{n}{T}\PY{o}{/}\PY{n}{dt}\PY{p}{)}
+         
+         \PY{k}{def} \PY{n+nf}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{drive}\PY{p}{,}\PY{n}{rng}\PY{p}{)}\PY{p}{:}
+         	\PY{l+s+sd}{\PYZdq{}\PYZdq{}\PYZdq{}}
+         \PY{l+s+sd}{	Simulates a mock neuron with a time step of 1ms.}
+         \PY{l+s+sd}{	Arguments:}
+         \PY{l+s+sd}{	drive \PYZhy{} input to the neuron (expect zero mean; SD=1)}
+         \PY{l+s+sd}{	Returns:}
+         \PY{l+s+sd}{	rho \PYZhy{} response function (0=non\PYZhy{}spike and 1=spike at each time step)}
+         \PY{l+s+sd}{	\PYZdq{}\PYZdq{}\PYZdq{}}	
+         	  
+         	\PY{n}{dt} \PY{o}{=} \PY{l+m+mf}{0.001}
+         	\PY{n}{T} \PY{o}{=} \PY{n}{dt}\PY{o}{*}\PY{n+nb}{len}\PY{p}{(}\PY{n}{drive}\PY{p}{)}
+         	\PY{n}{time} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{T}\PY{p}{,} \PY{n}{dt}\PY{p}{)}
+         	\PY{n}{lagSteps} \PY{o}{=} \PY{l+m+mf}{0.02}\PY{o}{/}\PY{n}{dt}
+         	\PY{n}{drive} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{concatenate}\PY{p}{(}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{n}{lagSteps}\PY{p}{)}\PY{p}{,} \PY{n}{drive}\PY{p}{[}\PY{n}{lagSteps}\PY{p}{:}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{system} \PY{o}{=} \PY{n}{scipy}\PY{o}{.}\PY{n}{signal}\PY{o}{.}\PY{n}{lti}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{,} \PY{p}{[}\PY{l+m+mf}{0.03}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{2}\PY{o}{*}\PY{l+m+mf}{0.03}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{]}\PY{p}{)}
+         	\PY{n}{\PYZus{}}\PY{p}{,} \PY{n}{L}\PY{p}{,} \PY{n}{\PYZus{}} \PY{o}{=} \PY{n}{scipy}\PY{o}{.}\PY{n}{signal}\PY{o}{.}\PY{n}{lsim}\PY{p}{(}\PY{n}{system}\PY{p}{,} \PY{n}{drive}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n}{np}\PY{o}{.}\PY{n}{newaxis}\PY{p}{]}\PY{p}{,} \PY{n}{time}\PY{p}{)}
+         	\PY{n}{rate} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{divide}\PY{p}{(}\PY{l+m+mi}{30}\PY{p}{,} \PY{l+m+mi}{1} \PY{o}{+} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{l+m+mi}{50}\PY{o}{*}\PY{p}{(}\PY{l+m+mf}{0.05}\PY{o}{\PYZhy{}}\PY{n}{L}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{spikeProb} \PY{o}{=} \PY{n}{rate}\PY{o}{*}\PY{n}{dt}
+         	\PY{k}{return} \PY{n}{rng}\PY{o}{.}\PY{n}{rand}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{spikeProb}\PY{p}{)}\PY{p}{)} \PY{o}{\PYZlt{}} \PY{n}{spikeProb}
+         
+         \PY{k}{def} \PY{n+nf}{spike\PYZus{}trig\PYZus{}avg}\PY{p}{(}\PY{n}{stim}\PY{p}{,}\PY{n}{spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{window} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{window\PYZus{}width} \PY{o}{/} \PY{n}{dt}\PY{p}{)}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{)}
+         	\PY{c}{\PYZsh{}truncate spikes in first window timesteps}
+         	\PY{n}{spike\PYZus{}indices}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{spikes}\PY{p}{[}\PY{n+nb}{len}\PY{p}{(}\PY{n}{window}\PY{p}{)}\PY{p}{:}\PY{p}{]}\PY{o}{==}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}
+         	\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{t} \PY{o+ow}{in} \PY{n}{window}\PY{p}{:}
+         		\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         		\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n}{spike\PYZus{}indices}\PY{p}{:}
+         			\PY{c}{\PYZsh{}undo truncation when indexing from stimulus}
+         			\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stim}\PY{p}{[}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{n+nb}{len}\PY{p}{(}\PY{n}{window}\PY{p}{)}\PY{p}{)}\PY{o}{\PYZhy{}}\PY{n}{t}\PY{p}{]}\PY{p}{)}
+         		\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{p}{)}\PY{p}{)}
+         
+         	\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{p}{)}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}\PY{o}{/}\PY{n+nb}{len}\PY{p}{(}\PY{n}{spike\PYZus{}indices}\PY{p}{)}
+         
+         	\PY{k}{return} \PY{o}{\PYZhy{}}\PY{l+m+mf}{1.0}\PY{o}{*}\PY{n}{window}\PY{o}{*}\PY{n}{dt}\PY{p}{,} \PY{n}{spike\PYZus{}triggered\PYZus{}avg}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}24}]:} \PY{k}{def} \PY{n+nf}{two\PYZus{}a}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mf}{1.0}
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.001}
+         	\PY{n}{mean}\PY{o}{=}\PY{l+m+mf}{0.0}
+         	\PY{n}{std}\PY{o}{=}\PY{l+m+mf}{1.0}
+         	\PY{n}{seed}\PY{o}{=}\PY{l+m+mi}{3}
+         
+         	\PY{c}{\PYZsh{}generate noisy signal with gaussian sampled numbers}
+         	\PY{n}{rng}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{RandomState}\PY{p}{(}\PY{n}{seed}\PY{o}{=}\PY{n}{seed}\PY{p}{)}
+         	\PY{n}{noise}\PY{o}{=}\PY{n}{white\PYZus{}noise}\PY{p}{(}\PY{n}{mean}\PY{p}{,}\PY{n}{std}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         	\PY{n}{t}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}generate colored noise by convolving the noise signal with a gaussian}
+         	\PY{n}{sigma}\PY{o}{=}\PY{l+m+mf}{0.020}
+         	\PY{n}{G} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{p}{(}\PY{n}{t}\PY{o}{\PYZhy{}}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{t}\PY{p}{)}\PY{p}{)}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{o}{/}\PY{p}{(}\PY{l+m+mi}{2}\PY{o}{*}\PY{n}{sigma}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}     
+         	\PY{n}{G} \PY{o}{=} \PY{n}{G} \PY{o}{/} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{G}\PY{p}{)}
+         	\PY{n}{colored\PYZus{}noise}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{G}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}feed colored noise into Bryan\PYZsq{}s spike generator}
+         	\PY{n}{spikes}\PY{o}{=}\PY{n}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         	\PY{n}{smooth\PYZus{}spikes}\PY{o}{=}\PY{n}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         	\PY{n}{rate}\PY{o}{=}\PY{n}{spikes}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{o}{/}\PY{n}{T}
+         	\PY{n}{smooth\PYZus{}rate}\PY{o}{=}\PY{n}{smooth\PYZus{}spikes}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{o}{/}\PY{n}{T}
+         
+         	\PY{c}{\PYZsh{}calculate the spike\PYZhy{}triggered average}
+         	\PY{n}{window\PYZus{}width}\PY{o}{=}\PY{l+m+mf}{0.100}
+         	\PY{n}{window}\PY{p}{,} \PY{n}{sta} \PY{o}{=} \PY{n}{spike\PYZus{}trig\PYZus{}avg}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}
+         	\PY{n}{smooth\PYZus{}window}\PY{p}{,} \PY{n}{smooth\PYZus{}sta} \PY{o}{=} \PY{n}{spike\PYZus{}trig\PYZus{}avg}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{,}\PY{n}{smooth\PYZus{}spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}the math says to scale with \PYZlt{}r\PYZgt{} = rate, but this overshoots for smoothed noise}
+         	\PY{n}{kernel} \PY{o}{=} \PY{n}{rate} \PY{o}{*} \PY{n}{sta} \PY{o}{/} \PY{n}{std}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}
+         	\PY{n}{smooth\PYZus{}kernel} \PY{o}{=} \PY{n}{smooth\PYZus{}sta} \PY{o}{/} \PY{n}{std}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}
+         
+         	\PY{n}{LNP} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{noise}\PY{p}{,} \PY{n}{kernel}\PY{p}{,} \PY{n}{mode}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{smooth\PYZus{}LNP} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{,} \PY{n}{smooth\PYZus{}kernel}\PY{p}{,} \PY{n}{mode}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Plot the white noise signal together with the LNP rate prediction}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{16}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{211}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t}\PY{p}{,}\PY{n}{noise}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{white noise signal}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{n}{alpha}\PY{o}{=}\PY{l+m+mf}{0.5}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t}\PY{p}{,}\PY{n}{LNP}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{LNP model rate prediction}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{n}{alpha}\PY{o}{=}\PY{l+m+mf}{0.5}\PY{p}{)}
+         	\PY{c}{\PYZsh{} ax.set\PYZus{}xlim(0,T)}
+         	\PY{n}{legend}\PY{o}{=}\PY{n}{ax}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{best}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{n}{shadow}\PY{o}{=}\PY{n+nb+bp}{True}\PY{p}{)}
+         	\PY{c}{\PYZsh{} ax.set\PYZus{}xlabel(\PYZsq{}time (seconds)\PYZsq{})}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{value}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{212}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t}\PY{p}{,}\PY{n}{colored\PYZus{}noise}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{smoothed white noise signal}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t}\PY{p}{,}\PY{n}{smooth\PYZus{}LNP}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{LNP model rate prediction}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{c}{\PYZsh{} ax.set\PYZus{}xlim(0,T)}
+         	\PY{n}{legend}\PY{o}{=}\PY{n}{ax}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{best}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{n}{shadow}\PY{o}{=}\PY{n+nb+bp}{True}\PY{p}{)}
+         	\PY{c}{\PYZsh{} ax.set\PYZus{}xlabel(\PYZsq{}time (seconds)\PYZsq{})}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{value}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+             
+         \PY{n}{two\PYZus{}a}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentLNPmodels_files/SYDE552-750AssignmentLNPmodels_13_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+
+I was unsure whether the top plot demonstrated that the model was correctly estimating the white noise signal, due to the high variability. I therefore smoothed the white noise signal and fed this stimulus into the synthetic neuron to produce spikes and a new rate estimate. The bottom plot shows that this estimate matches the original signal quite closely, validating my methodology. The only issue appears to be the magnitude of the first estimtae, but since I multiplied the spike triggered average by $<r>/\sigma_s^2$, I believe the scaling is as it should be.
+
+\subsection{Calculate and plot the multi-trial firing rate of the synthetic neuron (using methods from the previous assignment) over 250 repeated trials with the same white noise stimulus. Overlay the prediction from the linear poisson model.}
+
+\subsection{Scatterplot the multi-trial firing rate vs.~the linear poisson model
+prediction. Fit the neural nonlinearity using \texttt{scipy.optimize.curve\_fit()}.}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}25}]:} \PY{k}{def} \PY{n+nf}{two\PYZus{}b\PYZus{}thru\PYZus{}c}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mf}{1.0}
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.001}
+         	\PY{n}{mean}\PY{o}{=}\PY{l+m+mf}{0.0}
+         	\PY{n}{std}\PY{o}{=}\PY{l+m+mf}{1.0}
+         	\PY{n}{seed}\PY{o}{=}\PY{l+m+mi}{3}
+         
+         	\PY{c}{\PYZsh{}generate noisy signal with gaussian sampled numbers}
+         	\PY{n}{rng}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{RandomState}\PY{p}{(}\PY{n}{seed}\PY{o}{=}\PY{n}{seed}\PY{p}{)}
+         	\PY{n}{noise}\PY{o}{=}\PY{n}{white\PYZus{}noise}\PY{p}{(}\PY{n}{mean}\PY{p}{,}\PY{n}{std}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         	\PY{n}{t}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}generate colored noise by convolving the noise signal with a gaussian}
+         	\PY{n}{sigma}\PY{o}{=}\PY{l+m+mf}{0.020}
+         	\PY{n}{G} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{p}{(}\PY{n}{t}\PY{o}{\PYZhy{}}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{t}\PY{p}{)}\PY{p}{)}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{o}{/}\PY{p}{(}\PY{l+m+mi}{2}\PY{o}{*}\PY{n}{sigma}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}     
+         	\PY{n}{G} \PY{o}{=} \PY{n}{G} \PY{o}{/} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{G}\PY{p}{)}
+         	\PY{n}{colored\PYZus{}noise}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{G}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}feed colored noise into Bryan\PYZsq{}s spike generator}
+         	\PY{n}{spikes}\PY{o}{=}\PY{n}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         	\PY{n}{smooth\PYZus{}spikes}\PY{o}{=}\PY{n}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         	\PY{n}{rate}\PY{o}{=}\PY{n}{spikes}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{o}{/}\PY{n}{T}
+         	\PY{n}{smooth\PYZus{}rate}\PY{o}{=}\PY{n}{smooth\PYZus{}spikes}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{o}{/}\PY{n}{T}
+         
+         	\PY{c}{\PYZsh{}calculate the spike\PYZhy{}triggered average}
+         	\PY{n}{window\PYZus{}width}\PY{o}{=}\PY{l+m+mf}{0.100}
+         	\PY{n}{window}\PY{p}{,} \PY{n}{sta} \PY{o}{=} \PY{n}{spike\PYZus{}trig\PYZus{}avg}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}
+         	\PY{n}{smooth\PYZus{}window}\PY{p}{,} \PY{n}{smooth\PYZus{}sta} \PY{o}{=} \PY{n}{spike\PYZus{}trig\PYZus{}avg}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{,}\PY{n}{smooth\PYZus{}spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}the math says to scale with \PYZlt{}r\PYZgt{} = rate, but this overshoots for smoothed noise}
+         	\PY{n}{kernel} \PY{o}{=} \PY{n}{rate} \PY{o}{*} \PY{n}{sta} \PY{o}{/} \PY{n}{std}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}
+         	\PY{n}{smooth\PYZus{}kernel} \PY{o}{=} \PY{n}{smooth\PYZus{}sta} \PY{o}{/} \PY{n}{std}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}
+         
+         	\PY{n}{LNP} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{noise}\PY{p}{,} \PY{n}{kernel}\PY{p}{,} \PY{n}{mode}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{smooth\PYZus{}LNP} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{,} \PY{n}{smooth\PYZus{}kernel}\PY{p}{,} \PY{n}{mode}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Calculate the \PYZsq{}multi\PYZhy{}trial\PYZsq{} (or \PYZsq{}time\PYZhy{}varying\PYZsq{}) firing rate}
+         	\PY{c}{\PYZsh{}by counting the number of spikes in a small time window}
+         	\PY{c}{\PYZsh{}accross all trials}
+         	\PY{n}{bin\PYZus{}width}\PY{o}{=}\PY{l+m+mf}{0.010}
+         	\PY{n}{n\PYZus{}trials}\PY{o}{=}\PY{l+m+mi}{250}
+         	\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{int}\PY{p}{(}\PY{n}{T}\PY{o}{/}\PY{n}{bin\PYZus{}width}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+         		\PY{n}{bin\PYZus{}i}\PY{o}{=}\PY{l+m+mi}{0}
+         		\PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{n\PYZus{}trials}\PY{p}{)}\PY{p}{:}
+         			\PY{n}{spikes}\PY{o}{=}\PY{n}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         			\PY{n}{spike\PYZus{}times}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{spikes}\PY{o}{==}\PY{n+nb+bp}{True}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{*}\PY{n}{dt}
+         			\PY{k}{for} \PY{n}{t} \PY{o+ow}{in} \PY{n}{spike\PYZus{}times}\PY{p}{:}
+         				\PY{n}{bin\PYZus{}i}\PY{o}{+}\PY{o}{=}\PY{p}{(}\PY{n}{i}\PY{o}{*}\PY{n}{bin\PYZus{}width}\PY{o}{\PYZlt{}}\PY{o}{=}\PY{n}{t}\PY{o}{\PYZlt{}}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{o}{*}\PY{n}{bin\PYZus{}width}\PY{p}{)}
+         		\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{bin\PYZus{}i}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}plot the multitrial firing rate}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{111}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{bar}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{bin\PYZus{}width}\PY{p}{)}\PY{p}{,}\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{,}\PY{n}{width}\PY{o}{=}\PY{n}{bin\PYZus{}width}\PY{p}{)}
+         	\PY{c}{\PYZsh{} ax.set\PYZus{}xlim(0,T)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time (seconds)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{multi\PYZhy{}trial binned spike rate}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}curve fit the nonlinearity to a logistic (sigmoid) and rectified linear functions}
+         	\PY{k}{def} \PY{n+nf}{logistic}\PY{p}{(}\PY{n}{t}\PY{p}{,} \PY{n}{a}\PY{p}{,} \PY{n}{b}\PY{p}{,} \PY{n}{c}\PY{p}{)}\PY{p}{:}
+         	    \PY{k}{return} \PY{n}{a} \PY{o}{/} \PY{p}{(}\PY{l+m+mi}{1} \PY{o}{+} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{n}{b}\PY{o}{*}\PY{p}{(}\PY{n}{c}\PY{o}{\PYZhy{}}\PY{n}{t}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+         	\PY{k}{def} \PY{n+nf}{relu}\PY{p}{(}\PY{n}{t}\PY{p}{,} \PY{n}{threshold}\PY{p}{,} \PY{n}{m}\PY{p}{)}\PY{p}{:}
+         	    \PY{k}{return} \PY{n}{m} \PY{o}{*} \PY{n}{t} \PY{o}{*} \PY{p}{(}\PY{n}{t} \PY{o}{\PYZgt{}} \PY{n}{threshold}\PY{p}{)}
+         	\PY{n}{LNP\PYZus{}subset} \PY{o}{=} \PY{n}{LNP}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{n}{bin\PYZus{}width}\PY{o}{/}\PY{n}{dt}\PY{p}{]}
+         	\PY{n}{popt}\PY{p}{,} \PY{n}{pcov} \PY{o}{=} \PY{n}{curve\PYZus{}fit}\PY{p}{(}\PY{n}{logistic}\PY{p}{,} \PY{n}{LNP\PYZus{}subset}\PY{p}{,} \PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{)}
+         	\PY{n}{popt2}\PY{p}{,} \PY{n}{pcov2} \PY{o}{=} \PY{n}{curve\PYZus{}fit}\PY{p}{(}\PY{n}{relu}\PY{p}{,} \PY{n}{LNP\PYZus{}subset}\PY{p}{,} \PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{)}
+         	\PY{n}{t\PYZus{}odd}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{linspace}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{min}\PY{p}{(}\PY{n}{LNP\PYZus{}subset}\PY{p}{)}\PY{p}{,}\PY{n}{np}\PY{o}{.}\PY{n}{max}\PY{p}{(}\PY{n}{LNP\PYZus{}subset}\PY{p}{)}\PY{p}{,}\PY{l+m+mi}{100}\PY{p}{)}
+         	\PY{n}{fitted\PYZus{}logistic}\PY{o}{=}\PY{n}{logistic}\PY{p}{(}\PY{n}{t\PYZus{}odd}\PY{p}{,}\PY{o}{*}\PY{n}{popt}\PY{p}{)}
+         	\PY{n}{fitted\PYZus{}relu}\PY{o}{=}\PY{n}{relu}\PY{p}{(}\PY{n}{t\PYZus{}odd}\PY{p}{,}\PY{o}{*}\PY{n}{popt2}\PY{p}{)}
+         	\PY{c}{\PYZsh{}curve fit to smoothed LNP prediction}
+         	\PY{n}{LNP\PYZus{}smooth\PYZus{}subset} \PY{o}{=} \PY{n}{smooth\PYZus{}LNP}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{n}{bin\PYZus{}width}\PY{o}{/}\PY{n}{dt}\PY{p}{]}
+         	\PY{n}{popt\PYZus{}smooth}\PY{p}{,} \PY{n}{pcov\PYZus{}smooth} \PY{o}{=} \PY{n}{curve\PYZus{}fit}\PY{p}{(}\PY{n}{logistic}\PY{p}{,} \PY{n}{LNP\PYZus{}smooth\PYZus{}subset}\PY{p}{,} \PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{)}
+         	\PY{n}{popt2\PYZus{}smooth}\PY{p}{,} \PY{n}{pcov2\PYZus{}smooth} \PY{o}{=} \PY{n}{curve\PYZus{}fit}\PY{p}{(}\PY{n}{relu}\PY{p}{,} \PY{n}{LNP\PYZus{}smooth\PYZus{}subset}\PY{p}{,} \PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{)}
+         	\PY{n}{t\PYZus{}odd\PYZus{}smooth}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{linspace}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{min}\PY{p}{(}\PY{n}{LNP\PYZus{}smooth\PYZus{}subset}\PY{p}{)}\PY{p}{,}\PY{n}{np}\PY{o}{.}\PY{n}{max}\PY{p}{(}\PY{n}{LNP\PYZus{}smooth\PYZus{}subset}\PY{p}{)}\PY{p}{,}\PY{l+m+mi}{100}\PY{p}{)}
+         	\PY{n}{fitted\PYZus{}logistic\PYZus{}smooth}\PY{o}{=}\PY{n}{logistic}\PY{p}{(}\PY{n}{t\PYZus{}odd\PYZus{}smooth}\PY{p}{,}\PY{o}{*}\PY{n}{popt\PYZus{}smooth}\PY{p}{)}
+         	\PY{n}{fitted\PYZus{}relu\PYZus{}smooth}\PY{o}{=}\PY{n}{relu}\PY{p}{(}\PY{n}{t\PYZus{}odd\PYZus{}smooth}\PY{p}{,}\PY{o}{*}\PY{n}{popt2\PYZus{}smooth}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}plot LNP rate prediction vs multitrial firing rate}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{16}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{211}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{LNP\PYZus{}subset}\PY{p}{,}\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZdq{}}\PY{l+s}{data}\PY{l+s}{\PYZdq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t\PYZus{}odd}\PY{p}{,}\PY{n}{fitted\PYZus{}logistic}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{fitted logistic function, RMSE=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZsq{}}
+         				\PY{o}{\PYZpc{}}\PY{k}{np}.sqrt(np.average((fitted\PYZus{}logistic\PYZhy{}multitrial\PYZus{}binned\PYZus{}rate)**2)))
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t\PYZus{}odd}\PY{p}{,}\PY{n}{fitted\PYZus{}relu}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{fitted relu function, RMSE=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZsq{}}
+         				\PY{o}{\PYZpc{}}\PY{k}{np}.sqrt(np.average((fitted\PYZus{}relu\PYZhy{}multitrial\PYZus{}binned\PYZus{}rate)**2)))
+         	\PY{n}{legend}\PY{o}{=}\PY{n}{ax}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{best}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{n}{shadow}\PY{o}{=}\PY{n+nb+bp}{True}\PY{p}{)}
+         	\PY{c}{\PYZsh{} ax.set\PYZus{}xlabel(\PYZsq{}LNP rate prediction\PYZsq{})}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{multi\PYZhy{}trial firing rate}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{212}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{LNP\PYZus{}smooth\PYZus{}subset}\PY{p}{,}\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZdq{}}\PY{l+s}{data}\PY{l+s}{\PYZdq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t\PYZus{}odd\PYZus{}smooth}\PY{p}{,}\PY{n}{fitted\PYZus{}logistic\PYZus{}smooth}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{smooth fitted logistic function, RMSE=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZsq{}}
+         				\PY{o}{\PYZpc{}}\PY{k}{np}.sqrt(np.average((fitted\PYZus{}logistic\PYZus{}smooth\PYZhy{}multitrial\PYZus{}binned\PYZus{}rate)**2)))
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t\PYZus{}odd\PYZus{}smooth}\PY{p}{,}\PY{n}{fitted\PYZus{}relu\PYZus{}smooth}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{smooth fitted relu function, RMSE=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZsq{}}
+         				\PY{o}{\PYZpc{}}\PY{k}{np}.sqrt(np.average((fitted\PYZus{}relu\PYZus{}smooth\PYZhy{}multitrial\PYZus{}binned\PYZus{}rate)**2)))
+         	\PY{n}{legend}\PY{o}{=}\PY{n}{ax}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{best}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{n}{shadow}\PY{o}{=}\PY{n+nb+bp}{True}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{LNP rate prediction}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{multi\PYZhy{}trial firing rate}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+             
+         \PY{n}{two\PYZus{}b\PYZus{}thru\PYZus{}c}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentLNPmodels_files/SYDE552-750AssignmentLNPmodels_16_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentLNPmodels_files/SYDE552-750AssignmentLNPmodels_16_3.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+This plots should show that the actual firing rate is systematically different from the LNP rate prediction, specifically that they follow a sigmoid curve. If this were the case, running the curve fit on this plot would produce a nice estimate of the neural nonlinearity. I tried several procedures for generate more data, smoothing the data, and binning the result, but none of them significantly improved the fit.
+
+\subsection{Describe how you could generate spikes with a linear-nonlinear model of the synthetic neuron using the above results.}
+
+To estimate the firing rate of the synthetic neuron using an LNP model, I would generate a LP rate prediction as above (calculate the STA of the stimulus, use it to find the kernel, and convolve the stimulus with the kernel), then feed this estimate into a nonlinear activation function. This activation function could be optimized by using a curve fitting algorithm to find parameters which minimized the error between a trial dataset of firing rates and the LNP predictions, assuming a standard activation function such as a sigmoid, tanh, or rectified linear. Depending on the resolution of the data, it may be necessary to ``bin'' the linear poisson rate prediction before doing the curve-fitting.
+
+\end{document}
