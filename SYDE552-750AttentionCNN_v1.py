@@ -8,46 +8,63 @@ from scipy import signal
 import json
 import nengo
 import matplotlib.pyplot as plt
-# from keras.models import model_from_json
-# from keras.datasets import cifar100 
+plt.rcParams['lines.linewidth'] = 1
+plt.rcParams['font.size'] = 20
 
-# filename='cifar100_v5_n_layer_pool=4'
-# arch = model_from_json(open(filename+'_model.json').read())
-# arch.load_weights(filename+'_weights.h5')
-# arch_dict={}
+from keras.models import model_from_json
+from keras.datasets import cifar100 
 
-# for node in arch.nodes:
-# 	name=str(arch.nodes[node].get_config()['custom_name'])
-# 	config = arch.nodes[node].get_config()
-# 	# print arch.nodes[node].get_input(train=False).name
-# 	arch_dict[name] = config
+filename='cifar100_v5_n_layer_test'
+arch = model_from_json(open(filename+'_model.json').read())
+arch.load_weights(filename+'_weights.h5')
 
-# #import an image
-# (X_train, y_train), (X_test, y_test) = cifar100.load_data()
+arch_dict={}
+# print dir(arch)
+# print dir(arch.nodes)
+# print dir(arch.node_config)
+s=0
+for n in range(len(arch.nodes)):
+	name=str(arch.nodes.items()[n][0])
+	arch_dict[name] = {} #one dictionary per layer
+	layer_type=str(arch.nodes[name].get_config()['name'])
+	arch_dict[name]['type'] = layer_type
+	arch_dict[name]['input'] = arch.node_config[n]['input']
+	# arch_dict[name]['input_shape'] = arch.nodes[name].get_config()['input_shape']
+	if (layer_type == 'Convolution2D' or layer_type == 'Dropout' or layer_type == 'Dense'):
+		arch_dict[name]['weights'] = arch.get_weights()[s]
+		s+=1
 
-# img_x, img_y, img_z = X_train.shape[2], X_train.shape[3], X_train.shape[1]
-# samples_train = X_train.shape[0]
-# samples_test = X_test.shape[0]
-# image=X_train[0]
-# image_test=np.random.rand(img_x, img_y)
+#import an image
+(X_train, y_train), (X_test, y_test) = cifar100.load_data()
+img_x, img_y, img_z = X_train.shape[2], X_train.shape[3], X_train.shape[1]
+samples_train = X_train.shape[0]
+samples_test = X_test.shape[0]
+image=X_train[0]
 
-img_x, img_y, img_z = 32,32,3
+# img_x, img_y, img_z = 32,32,3
+# image_test=np.random.rand(img_z, img_x, img_y)
+# weight_test=np.random.rand(3,16,7,7)
 
-image_test=np.random.rand(img_z, img_x, img_y)
-weight_test=np.random.rand(3,16,7,7)
-
+ens_dict={}
+conn_dict={}
+image_stim_dict={}
+size_array=[img_x] #for this particular network
+for i in np.arange(0,5):
+	kernel_size=arch_dict['conv%s'%i]['weights'].shape[-1]
+	size_array.append(size_array[i]-kernel_size+1)
+for i in np.arange(0,3):
+	dense_size=arch_dict['dense%s'%i]['weights'].shape[-1]
+	size_array.append(dense_size)
+print size_array
 
 model = nengo.Network('CNN with Attention')
 
 with model:
 
-	image_stim_dict={}
 	for c in range(img_z):
-		image_stim_dict['color_%s' %c] = nengo.Node(output=lambda t: image_test[c].ravel())
+		image_stim_dict['color_%s' %c] = nengo.Node(output=lambda t: image[c].ravel())
 
 	#represent image pixels in 3 ensemble arrays
-	ens_dict={}
-	conn_dict={}
 	for i in range(img_z):
 		input_name='color_%s' %i
 		ens_name='ens_img_ft_%s' %i
@@ -61,44 +78,85 @@ with model:
 									ens_dict[ens_name].input)
 
 	#define convolution function between layers
-	def conv(A):
-		#make 1D input into 2D array
-		input_2d=np.zeros((img_x-1,img_y-1))
-		for x in range(img_x-1):
-			for y in range(img_y-1):
-				input_2d[x][y]=A[x*(img_x-1)+y]
-		#convolve, then flatten for input to next ensemble array
-		output=signal.convolve2d(input_2d,kernel,mode='valid').ravel()
-		return output
+	def conv(t,A):
+		A_square=A.reshape((np.sqrt(len(A))),np.sqrt(len(A)))
+		return signal.convolve2d(A_square,kernel,mode='valid').ravel()
 
 	#connect the first convolutional layer to the image ensemble
-	FMs_in=weight_test.shape[0]
-	FMs_here=weight_test.shape[1]
-	ker_x=weight_test.shape[2]
-	ker_y=weight_test.shape[3]
+	W=arch_dict['conv%s'%0]['weights']
+	FMs_here, FMs_in, ker_x, ker_y = W.shape
 	for i in range(FMs_here): #feature map i of layer_n
 		ens_name='ens_lyr_%s_ft_%s' %(0,i)
 		ens_dict[ens_name] = nengo.networks.EnsembleArray(n_neurons=3,
-									n_ensembles=(img_x-ker_x)*(img_y-ker_y),
+									n_ensembles=size_array[1]**2,
 									ens_dimensions=1,
 									neuron_type=nengo.Direct())
 		for j in range(FMs_in): #connection from feature map j of layer_(n-1)
 			input_name='ens_img_ft_%s' %j
 			conn_name='conn_lyr_%s_ft_%s_to_lyr%s_ft_%s' %(-1,j,0,i)
-			kernel=weight_test[j][i]
-			T_test=np.ones((625,1024))
-			conn_dict[conn_name] = nengo.Connection(ens_dict[input_name].output,
-												ens_dict[ens_name].input, 
-												transform=T_test)
-												# function=conv) #passthrough node error
-												#, synapse=pstc)
+			kernel=W[i][j]
+			inter=nengo.Node(output=conv,size_in=size_array[0]**2)
+			conn_dict[conn_name] = nengo.Connection(ens_dict[input_name].output,inter)
+			conn_dict[conn_name+'pass_node'] = nengo.Connection(inter,ens_dict[ens_name].input)
+
+	#build the rest of the convolutional stack
+	for n in np.arange(1,5):
+		print n
+		W=arch_dict['conv%s'%n]['weights']
+		FMs_here, FMs_in, ker_x, ker_y = W.shape
+		for i in range(FMs_here): #feature map i of layer_n
+			ens_name='ens_lyr_%s_ft_%s' %(n,i)
+			#layer 1D size = (sqrt(input layer shape)-ker_x+1)^2
+			ens_dict[ens_name] = nengo.networks.EnsembleArray(n_neurons=3,
+										n_ensembles=size_array[n+1]**2,
+										ens_dimensions=1,
+										neuron_type=nengo.Direct())
+			for j in range(FMs_in): #connection from feature map j of layer_(n-1)
+				input_name='ens_lyr_%s_ft_%s' %(n-1,j)
+				conn_name='conn_lyr_%s_ft_%s_to_lyr%s_ft_%s' %(n-1,j,n,i)
+				kernel=W[i][j]
+				print kernel.shape, size_array[n+1], size_array[n]
+				inter=nengo.Node(output=conv,size_in=size_array[n]**2)
+				conn_dict[conn_name] = nengo.Connection(ens_dict[input_name].output,inter)
+				conn_dict[conn_name+'pass_node'] = nengo.Connection(inter,ens_dict[ens_name].input)
+
+	#flatten the last convolutional layer
+	ens_name='ens_lyr_flatten'
+	FMs_to_flatten=FMs_here
+	nodes_per_FM=size_array[5]**2
+	flatten_nodes=FMs_to_flatten*nodes_per_FM #feature maps in last conv layer * units in each FM
+	ens_dict[ens_name] = nengo.networks.EnsembleArray(n_neurons=3,
+									n_ensembles=flatten_nodes,
+									ens_dimensions=1,
+									neuron_type=nengo.Direct())
+	for i in range(FMs_to_flatten):
+		input_name='ens_lyr_%s_ft_%s' %(4,i)
+		conn_name='conn_lyr_%s_ft_%s_to_flatten' %(4,i)
+		conn_dict[conn_name] = nengo.Connection(ens_dict[input_name].output,
+												ens_dict[ens_name].input
+												[i*nodes_per_FM:(i+1)*nodes_per_FM])
+
+ 	#connect the flattened layer to the first dense layer
+	input_name='ens_lyr_flatten'
+	ens_name='ens_lyr_dense_%s' %0
+	conn_name='conn_lyr_flatten_to_dense_%s' %0
+	weights=arch_dict['dense%s'%0]['weights'].T
+	print weights.shape
+	ens_dict[ens_name] = nengo.networks.EnsembleArray(n_neurons=3,
+									n_ensembles=size_array[6],
+									ens_dimensions=1,
+									neuron_type=nengo.Direct())
+	conn_dict[conn_name] = nengo.Connection(ens_dict[input_name].output,
+									ens_dict[ens_name].input,
+									transform=weights)
 
 	probe_0 = nengo.Probe(ens_dict['ens_img_ft_0'].output)
-	probe_1 = nengo.Probe(ens_dict['ens_lyr_0_ft_1'].output)
+	probe_1 = nengo.Probe(ens_dict['ens_lyr_dense_0'].output)
 
 sim = nengo.Simulator(model)
-sim.run(0.1)
+sim.run(0.05)
 t=sim.trange()
+print t
 
 fig=plt.figure(figsize=(16,8))
 ax=fig.add_subplot(211)
@@ -106,5 +164,4 @@ ax.plot(t,sim.data[probe_0])
 ax=fig.add_subplot(212)
 ax.plot(t,sim.data[probe_1])
 ax.set_xlabel('time')
-ax.set_ylabel('ens_image')
 plt.show()

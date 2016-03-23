@@ -35,19 +35,19 @@ samples_test = X_test.shape[0]
 image_dim=(shapez,shapex,shapey)
 
 # Parameters
-filename='cifar100_v5_n_layer_pool=4'
+filename='cifar100_v5_n_layer_test'
 batch_size = 32
 classes = 100
-epochs = 2
+epochs = 20
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
-train_datapoints=50
-test_datapoints=30
+train_datapoints=500
+test_datapoints=300
 n_conv_layers=5
 n_dense_layers=3
-n_filters = [48,48,48,48,48] # number of feature maps at layer_i, len(n_conv_layers)
+n_filters = [8,16,32,16,8] # number of feature maps at layer_i, len(n_conv_layers)
 pool_size = [4,4,4,4,4] # square size of pooling window at layer_i, len(n_conv_layers)
 kernel_size = [7,7,5,5,3] # square size of kernel at layer_i, len(n_conv_layers)
 dropout_frac = [.5,.5,.5,.5,.5,.5,.5,.5]# dropout fraction at layer_i, len(n_conv_layers+n_dense_layers)
