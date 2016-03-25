@@ -37,6 +37,7 @@ learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
+ps=1
 
 # MNIST data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -68,11 +69,11 @@ model.add_input(name='input', input_shape=image_dim)
 
 #1st conv layer
 model.add_node(Convolution2D(32, 3, 3, activation='relu'),name='conv0', input='input')
-model.add_node(MaxPooling2D(pool_size=(2, 2)),name='maxpool0', input='conv0')
+model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool0', input='conv0')
 
 #2nd conv layer
 model.add_node(Convolution2D(32, 3, 3, activation='relu'),name='conv1', input='maxpool0')
-model.add_node(MaxPooling2D(pool_size=(2, 2)),name='maxpool1', input='conv1')
+model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool1', input='conv1')
 
 #flatten layer
 model.add_node(Flatten(),name='flatten', input='maxpool1')
@@ -147,17 +148,18 @@ def output_stuff(model, history):
 	json_string = model.to_json()
 	open(filename+'_model.json', 'w').write(json_string)
 
-	arch_dict={} #could make this into a loop over model nodes in the future
-	arch_dict['input']={'type':'image', 'input_name':'MNIST', 'weights':None, 'activation':None, 'extra':{}}
-	arch_dict['conv0']={'type':'Convolution2D', 'input_name':'input', 'weights':model.nodes['conv0'].get_weights()[0],'activation':'relu', 'extra':{'stride':0, 'biases':model.nodes['conv0'].get_weights()[1]}}
-	arch_dict['maxpool0']={'type':'MaxPooling2D', 'input_name':'conv0', 'weights':None, 'activation':None, 'extra':{'stride':0, 'biases':None, 'pool_type':'max', 'pool_size': 2}}
-	arch_dict['conv1']={'type':'Convolution2D', 'input_name':'maxpool0', 'weights':model.nodes['conv1'].get_weights()[0], 'activation':'relu', 'extra':{'stride':0, 'biases':model.nodes['conv1'].get_weights()[1]}}
-	arch_dict['maxpool1']={'type':'MaxPooling2D', 'input_name':'conv1', 'weights':None,'activation':None, 'extra':{'stride':0, 'biases':None, 'pool_type':'max', 'pool_size': 2}}
-	arch_dict['flatten']={'type':'Flatten', 'input_name':'maxpool1', 'weights':None,'activation':None, 'extra':{'stride':0, 'biases':None}}
-	arch_dict['dense0']={'type':'Dense', 'input_name':'flatten', 'weights':model.nodes['dense0'].get_weights()[0],'activation':'relu','extra':{'stride':0, 'biases':model.nodes['dense0'].get_weights()[1]}}
-	arch_dict['dense1']={'type':'Dense', 'input_name':'dense0', 'weights':model.nodes['dense1'].get_weights()[0],'activation':'softmax', 'extra':{'stride':0, 'biases':model.nodes['dense1'].get_weights()[1]}}
-	arch_dict['input']={'type':'output', 'input_name':'dense1', 'weights':None, 'activation':None, 'extra':{}}
-	
+	arch_dict=OrderedDict(( #could make this into a loop over model nodes in the future
+		('input',{'type':'input', 'input_name':'image', 'weights':None, 'biases':None, 'activation':None}),
+		('conv0', {'type':'Convolution2D', 'input_name':'input', 'weights':model.nodes['conv0'].get_weights()[0],'biases':model.nodes['conv0'].get_weights()[1],'activation':'relu', 'stride':1,'activities':get_outputs(model,'input','conv0',X_test[:test_datapoints])}),
+		('maxpool0', {'type':'MaxPooling2D', 'input_name':'conv0', 'weights':None, 'activation':None, 'biases':None,'stride':None, 'pool_type':'max', 'pool_size': ps,'activities':get_outputs(model,'input','maxpool0',X_test[:test_datapoints])}),
+		('conv1', {'type':'Convolution2D', 'input_name':'maxpool0', 'weights':model.nodes['conv1'].get_weights()[0], 'biases':model.nodes['conv1'].get_weights()[1], 'activation':'relu', 'stride':1,'activities':get_outputs(model,'input','conv1',X_test[:test_datapoints])}),
+		('maxpool1', {'type':'MaxPooling2D', 'input_name':'conv1', 'weights':None,'activation':None, 'biases':None, 'stride':None, 'pool_type':'max', 'pool_size': ps,'activities':get_outputs(model,'input','maxpool1',X_test[:test_datapoints])}),
+		('flatten', {'type':'Flatten', 'input_name':'maxpool1', 'weights':None,'activation':None, 'biases':None, 'stride':1,'activities':get_outputs(model,'input','flatten',X_test[:test_datapoints])}),
+		('dense0', {'type':'Dense', 'input_name':'flatten', 'weights':model.nodes['dense0'].get_weights()[0], 'biases':model.nodes['dense0'].get_weights()[1],'activation':'relu','stride':1,'activities':get_outputs(model,'input','dense0',X_test[:test_datapoints])}),
+		('dense1', {'type':'Dense', 'input_name':'dense0', 'weights':model.nodes['dense1'].get_weights()[0],'biases':model.nodes['dense1'].get_weights()[1], 'activation':'softmax', 'stride':1,'activities':get_outputs(model,'input','dense1',X_test[:test_datapoints])}),
+		('output', {'type':'output', 'input_name':'dense1', 'weights':None, 'biases':None, 'activation':None}),
+	))
+	# print ([get_outputs(model,'input',the_node,X_test[:test_datapoints]).shape for the_node in model.nodes])
 	# data=dumps(arch_dict)
 	with open(filename+"_arch.json","w") as datafile:
 		dump(arch_dict, datafile)
