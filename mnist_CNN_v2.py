@@ -29,15 +29,16 @@ from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
 
 # Hyperparameters
-filename='mnist_CNN_v1_test'
-batch_size = 128
+filename='mnist_CNN_v2'
+batch_size = 64
 classes = 10
-epochs = 2
+epochs = 20
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
 ps=1
+drop=0.5
 
 # MNIST data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -48,8 +49,8 @@ X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
-samples_train = X_train.shape[0]/1
-samples_test = X_test.shape[0]/1
+samples_train = X_train.shape[0]/10
+samples_test = X_test.shape[0]/10
 image_dim=(1,img_x,img_y)
 
 # Training parameters
@@ -68,24 +69,26 @@ model = Graph()
 model.add_input(name='input', input_shape=image_dim)
 
 #1st conv layer
-model.add_node(Convolution2D(32, 3, 3, activation='relu'),name='conv0', input='input')
+model.add_node(Convolution2D(20, 5, 5, activation='linear'),name='conv0', input='input')
 model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool0', input='conv0')
+model.add_node(Dropout(drop),name='dropout0', input='maxpool0')
 
 #2nd conv layer
-model.add_node(Convolution2D(32, 3, 3, activation='relu'),name='conv1', input='maxpool0')
+model.add_node(Convolution2D(50, 5, 5, activation='linear'),name='conv1', input='dropout0')
 model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool1', input='conv1')
+model.add_node(Dropout(drop),name='dropout1', input='maxpool1')
 
 #flatten layer
-model.add_node(Flatten(),name='flatten', input='maxpool1')
+model.add_node(Flatten(),name='flatten', input='dropout1')
 
 #1st dense layer
-model.add_node(Dense(128, activation='relu'),name='dense0', input='flatten')
+model.add_node(Dense(500, activation='linear'),name='dense0', input='flatten')
 
 #2d dense layer
 model.add_node(Dense(classes, activation='softmax'),name='dense1', input='dense0')
 
 # output
-model.add_output(name='output', input='dense1', merge_mode='max')
+model.add_output(name='output', input='dense1', merge_mode='softmax')
 
 
 
@@ -150,7 +153,7 @@ def output_stuff(model, history):
 
 	arch_dict=OrderedDict(( #could make this into a loop over model nodes in the future
 		('input',{'type':'input', 'input_name':'image', 'weights':None, 'biases':None, 'activation':None}),
-		('conv0', {'type':'Convolution2D', 'input_name':'input', 'weights':model.nodes['conv0'].get_weights()[0],'biases':model.nodes['conv0'].get_weights()[1],'activation':'relu', 'stride':1,'activities':None}), #get_outputs(model,'input','conv1',X_test[:test_datapoints])
+		('conv0', {'type':'Convolution2D', 'input_name':'input', 'weights':model.nodes['conv0'].get_weights()[0],'biases':model.nodes['conv0'].get_weights()[1],'activation':'relu', 'stride':1,'activities':None}),
 		('maxpool0', {'type':'MaxPooling2D', 'input_name':'conv0', 'weights':None, 'activation':None, 'biases':None,'stride':None, 'pool_type':'max', 'pool_size': ps,'activities':None}),
 		('conv1', {'type':'Convolution2D', 'input_name':'maxpool0', 'weights':model.nodes['conv1'].get_weights()[0], 'biases':model.nodes['conv1'].get_weights()[1], 'activation':'relu', 'stride':1,'activities':None}),
 		('maxpool1', {'type':'MaxPooling2D', 'input_name':'conv1', 'weights':None,'activation':None, 'biases':None, 'stride':None, 'pool_type':'max', 'pool_size': ps,'activities':None}),

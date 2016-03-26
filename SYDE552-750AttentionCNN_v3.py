@@ -29,7 +29,7 @@ samples_test = X_test.shape[0]
 
 #import architecture and weights from keras network
 print 'Loading Model Architecture from Keras .json output...'
-in_filename='mnist_CNN_v2'
+in_filename='mnist_CNN_v1_allpoints'
 with open(in_filename+"_arch.json") as datafile:    
 	arch_dict=load(datafile,preserve_order=True)
 
@@ -57,7 +57,7 @@ with model:
 
 		elif key == 'conv0':
 			my_input=model_dict[value['input_name']]
-			model_dict[key] = nengo.Node(Conv2d(image_dim, value['weights'],
+			model_dict[key] = nengo.Node(Conv2d(image_dim, value['weights'],activation='relu',
 											biases=value['biases'],stride=value['stride']))
 			conn_dict[value['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
@@ -65,7 +65,8 @@ with model:
 		elif value['type']=='Convolution2D':
 			my_input=model_dict[value['input_name']]
 			model_dict[key] = nengo.Node(Conv2d(my_input.output.shape_out, value['weights'],
-											biases=value['biases'],stride=value['stride']))
+											activation='relu', biases=value['biases'],
+											stride=value['stride']))
 			conn_dict[value['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
 
@@ -93,19 +94,36 @@ with model:
 			conn_dict[value['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
 
-		elif value['type']=='Dense':
+		elif key=='dense0': #define general function here to model activation
 			my_input=model_dict[value['input_name']]
-			model_dict[key] = nengo.Node(output=lambda t,x: x,
+			model_dict[key] = nengo.Node(output=lambda t,x: np.maximum(x,np.zeros((x.shape))),
+											size_in=value['weights'].shape[1])
+			conn_dict[value['input_name']+'_to_'+key]=nengo.Connection(
+											my_input,model_dict[key],synapse=None,
+											transform=value['weights'].T)
+
+		elif key=='dense1':
+			def softmax(t,x):
+				normalized = np.array([np.exp(xi)/np.sum((np.exp(x))) for xi in x])
+				return normalized
+			my_input=model_dict[value['input_name']]
+			model_dict[key] = nengo.Node(output=softmax,
 											size_in=value['weights'].shape[1])
 			conn_dict[value['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None,
 											transform=value['weights'].T)
 
 		elif value['type']=='output':
-			def summation(t,x):
-				return 10*np.sum(x)
+			def summation(t,x): #returns an array of the correct values
+				summation = np.sum(x)
+				return summation
+			def summation_bug(t,x): #returns an array of 1.
+				return np.sum(x)
+			def maximization(t,x):
+				maximumizizium = np.argmax(x)
+				return maximumizizium			
 			my_input=model_dict[value['input_name']]
-			model_dict[key] = nengo.Node(output=summation,
+			model_dict[key] = nengo.Node(output=maximization,
 											size_in=my_input.size_out)
 			conn_dict[value['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
@@ -133,4 +151,4 @@ for i in range(100):
 	sim.run(T)
 	p_out = sim.data[output_probe]
 	print 'correct classification is',y_train[int(i*T/presentation_time)]
-	print 'model classification is',np.average(p_out[i*T/dt:(i+1)*T/dt])
+	print 'model classification is',np.median(p_out[i*T/dt:(i+1)*T/dt])
