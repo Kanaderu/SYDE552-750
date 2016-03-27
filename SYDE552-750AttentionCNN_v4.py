@@ -144,23 +144,22 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict):
 			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
 
 			#B_near unit
-			last_name=my_name
-			my_C=model_dict[last_name] #input C unit
-			my_name='sal_B_near_'+key
-			shape_in=my_C.output.shape_out
-			shape_out=model_dict[key].output.shape_out #back to (filters,convN_x, convN_y)
-			FB_near_type=FB_dict[key]['FB_near_type']
-			k_FB=FB_dict[key]['k_FB']
-			model_dict[my_name] = nengo.Node(Sal_B_near(shape_in,shape_out,
-											feedback=FB_near_type,k_FB=k_FB))
-			conn_dict[last_name+'_to_'+my_name]=nengo.Connection(
-											my_C,model_dict[my_name],synapse=None)
-			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
-
-			#connect B back to conv
-			tau_FB_near=FB_dict[key]['tau_FB_near']
-			conn_dict[my_name+'_to_'+key]=nengo.Connection(
-											model_dict[my_name],model_dict[key],synapse=tau_FB_near)
+			if FB_dict[key]['FB_near'] == True:
+				last_name=my_name
+				my_C=model_dict[last_name] #input C unit
+				my_name='sal_B_near_'+key
+				shape_in=my_C.output.shape_out
+				shape_out=model_dict[key].output.shape_out #back to (filters,convN_x, convN_y)
+				FB_near_type=FB_dict[key]['FB_near_type']
+				k_FB=FB_dict[key]['k_FB']
+				model_dict[my_name] = nengo.Node(Sal_B_near(shape_in,shape_out,
+												feedback=FB_near_type,k_FB=k_FB))
+				conn_dict[last_name+'_to_'+my_name]=nengo.Connection( #connect C to B_near
+												my_C,model_dict[my_name],synapse=None)
+				probe_dict[my_name]=nengo.Probe(model_dict[my_name])
+				tau_FB_near=FB_dict[key]['tau_FB_near']
+				conn_dict[my_name+'_to_'+key]=nengo.Connection( #connect B_near back to conv
+												model_dict[my_name],model_dict[key],synapse=tau_FB_near)
 
 			#B_far unit
 			# my_F=model_dict[my_name] #input C unit
@@ -196,12 +195,31 @@ def simulate_error_rate(model,data,labels,probe_dict,frac,pt):
 	sim = nengo.Simulator(model)
 	n_images=int(frac*len(data))
 	sim.run(pt*n_images)
-	guesses = sim.data[probe_dict['output_probe']].ravel()
-	answers = labels[:n_images]
-	error=np.count_nonzero(guesses != answers)/float(len(answers))
-	print 'answers', answers
-	print 'guesses', guesses
-	return sim, error
+	y_predicted = sim.data[probe_dict['output_probe']].ravel()
+	y_true = labels[:n_images]
+
+	errors=[]
+	for n in np.arange(0.0,9.0,1.0):
+		answers_index=np.where(y_true==int(n))[0]
+		guesses_index=np.where(y_predicted==n)[0]
+		total_index=np.union1d(answers_index,guesses_index)
+		print answers_index, guesses_index, total_index
+		correct_index=np.intersect1d(answers_index,total_index)
+		incorrect_index=np.setdiff1d(total_index,correct_index)
+		print correct_index, incorrect_index
+		false_positives=np.intersect1d(incorrect_index,answers_index)
+		false_negatives=np.intersect1d(incorrect_index,guesses_index)
+		print false_positives, false_negatives
+		correct_ratio=1.0*len(correct_index)/len(total_index)
+		FP_ratio=1.0*len(false_positives)/len(total_index)
+		FN_ratio=1.0*len(false_negatives)/len(total_index)
+		print correct_ratio, FP_ratio, FN_ratio
+		errors.append(['class=%s' %n,'correct ratio %s' %correct_ratio,
+				'false positive ratio %s' %FP_ratio,'false negative ratio %s' %FN_ratio])
+	print 'errors',errors
+	print 'y_predicted', y_predicted
+	print 'y_true', y_true
+	return sim, errors
 
 def main():
 
@@ -217,7 +235,7 @@ def main():
 		if key == 'conv0':
 			FB_dict[key] = {
 				'competition': 'none',
-				'FB_near':True,
+				'FB_near':False,
 				'FB_near_type': 'constant',
 				'tau_FB_near': 0.001,
 				'k_FB': 0.001, #>0.001 => high error
@@ -226,7 +244,7 @@ def main():
 		if key == 'conv1':
 			FB_dict[key] = {
 				'competition': 'none',
-				'FB_near':True,
+				'FB_near':False,
 				'FB_near_type': 'constant',
 				'tau_FB_near': 0.001,
 				'k_FB': 0.001, #>0.001 => high error
@@ -234,7 +252,7 @@ def main():
 				}
 
 	model, model_dict, conn_dict, probe_dict = build_model(arch_dict,data[0],frac,pt,FB_dict)
-	sim, error=simulate_error_rate(model,data[0],data[1],probe_dict,frac,pt)
+	sim, errors=simulate_error_rate(model,data[0],data[1],probe_dict,frac,pt)
 	# print 'conv0 pre probe FM0',sim.data[probe_dict['conv0_pre']][7].reshape((32,26,26))[0]
 	# print 'conv0 post probe FM0',sim.data[probe_dict['conv0']][7].reshape((32,26,26))[0]
 	# print 'sal_B_near_0 probe FM0',sim.data[probe_dict['sal_B_near_conv0']][7].reshape((32,26,26))[0][0]
@@ -243,6 +261,6 @@ def main():
 	# print 'sal_B_near_0 probe FM1',sim.data[probe_dict['sal_B_near_conv0']][1].reshape((32,26,26))[1][0]	
 	# print 'dense0 probe',sim.data[probe_dict['dense0']].sum()
 	# print 'dense1 probe',sim.data[probe_dict['dense1']].sum()
-	print 'error rate', error
+	print 'errors', errors
 
 main()
