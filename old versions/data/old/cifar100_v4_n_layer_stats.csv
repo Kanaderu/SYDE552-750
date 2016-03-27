@@ -1,0 +1,96 @@
+Statistics for cifar100_v4_n_layer
+
+layer	0
+mean_A_conv	0.272878
+std_A_conv	0.357086
+max_A_conv absolute, relative	1.79961	6.59492
+std_across_features_mean_A_conv  absolute, relative	0.33857	1.24074
+std_across_features_max_A_conv absolute, relative	0.503669	1.84577
+
+layer	1
+mean_A_conv	0.982604
+std_A_conv	1.1535
+max_A_conv absolute, relative	7.04352	7.16822
+std_across_features_mean_A_conv  absolute, relative	1.08853	1.1078
+std_across_features_max_A_conv absolute, relative	1.9781	2.01312
+
+layer	2
+mean_A_conv	0.549045
+std_A_conv	0.325474
+max_A_conv absolute, relative	2.01236	3.6652
+std_across_features_mean_A_conv  absolute, relative	0.29922	0.544982
+std_across_features_max_A_conv absolute, relative	0.472987	0.861472
+
+layer	3
+mean_A_conv	1.01838
+std_A_conv	0.48247
+max_A_conv absolute, relative	3.54155	3.47762
+std_across_features_mean_A_conv  absolute, relative	0.461069	0.452747
+std_across_features_max_A_conv absolute, relative	0.664308	0.652318
+
+layer	4
+mean_A_conv	0.165741
+std_A_conv	0.147158
+max_A_conv absolute, relative	0.573818	3.46215
+std_across_features_mean_A_conv  absolute, relative	0.146252	0.882413
+std_across_features_max_A_conv absolute, relative	0.161681	0.975504
+
+layer	0
+mean_acoss_map0_A_avg absolute, relative	0.00172792	0.00633215
+std_acoss_map0_A_avg absolute, relative	0.000961697	0.00352425
+max_acoss_map0_A_avg absolute, relative	0.00353771	0.0129643
+std_across_features_A_avg_centerunit absolute, relative	0.423267	1.55111
+
+layer	1
+mean_acoss_map0_A_avg absolute, relative	0.7468	0.760021
+std_acoss_map0_A_avg absolute, relative	0.152413	0.155111
+max_acoss_map0_A_avg absolute, relative	1.21206	1.23351
+std_across_features_A_avg_centerunit absolute, relative	0.869306	0.884695
+
+layer	2
+mean_acoss_map0_A_avg absolute, relative	0.356992	0.652323
+std_acoss_map0_A_avg absolute, relative	0.0326985	0.0597491
+max_acoss_map0_A_avg absolute, relative	0.452388	0.826638
+std_across_features_A_avg_centerunit absolute, relative	0.319705	0.58419
+
+layer	3
+mean_acoss_map0_A_avg absolute, relative	2.32748	2.28547
+std_acoss_map0_A_avg absolute, relative	0.442585	0.434596
+max_acoss_map0_A_avg absolute, relative	3.38122	3.32019
+std_across_features_A_avg_centerunit absolute, relative	0.472498	0.46397
+
+layer	4
+mean_acoss_map0_A_avg absolute, relative	0.117867	0.711155
+std_acoss_map0_A_avg absolute, relative	0.00687746	0.0414953
+max_acoss_map0_A_avg absolute, relative	0.128282	0.77399
+std_across_features_A_avg_centerunit absolute, relative	0.145854	0.880011
+
+layer	0
+mean_acoss_map0_A_max absolute, relative	0.00274365	0.00555072
+std_acoss_map0_A_max absolute, relative	0.00110939	0.00224443
+max_acoss_map0_A_max absolute, relative	0.00481035	0.00973188
+std_across_features_A_max_centerunit absolute, relative	0.776723	1.5714
+
+layer	1
+mean_acoss_map0_A_max absolute, relative	2.22955	0.971296
+std_acoss_map0_A_max absolute, relative	0.349559	0.152284
+max_acoss_map0_A_max absolute, relative	3.33644	1.45351
+std_across_features_A_max_centerunit absolute, relative	1.60611	0.699694
+
+layer	2
+mean_acoss_map0_A_max absolute, relative	1.56569	0.649102
+std_acoss_map0_A_max absolute, relative	0.0873299	0.0362051
+max_acoss_map0_A_max absolute, relative	1.74688	0.724217
+std_across_features_A_max_centerunit absolute, relative	1.41452	0.586428
+
+layer	3
+mean_acoss_map0_A_max absolute, relative	9.86739	2.02307
+std_acoss_map0_A_max absolute, relative	1.54221	0.316193
+max_acoss_map0_A_max absolute, relative	13.0991	2.68565
+std_across_features_A_max_centerunit absolute, relative	1.9259	0.394858
+
+layer	4
+mean_acoss_map0_A_max absolute, relative	0.852049	1.17732
+std_acoss_map0_A_max absolute, relative	0.0526794	0.07279
+max_acoss_map0_A_max absolute, relative	0.934627	1.29142
+std_across_features_A_max_centerunit absolute, relative	0.517463	0.715005

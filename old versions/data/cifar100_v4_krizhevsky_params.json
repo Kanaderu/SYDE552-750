@@ -1,0 +1,1 @@
+{"dense_size": [512, 512, 100], "learning_rate": 0.01, "batch_size": 16, "epochs": 20, "test_datapoints": 500, "n_filters": [16, 32, 64, 32], "dropout_frac": [0.5, 0.5], "filename": "cifar100_v4_krizhevsky", "decay": 0.0005, "nesterov": true, "pool_size": [2, 2], "classes": 100, "kernel_size": [7, 5, 3, 3], "train_datapoints": 500, "momentum": 0.9}

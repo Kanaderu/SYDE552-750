@@ -32,12 +32,13 @@ from keras.utils import np_utils, generic_utils
 filename='mnist_CNN_v1_test'
 batch_size = 128
 classes = 10
-epochs = 2
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
 ps=1
+frac=1
+epochs = 1
 
 # MNIST data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -48,8 +49,8 @@ X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
-samples_train = X_train.shape[0]/1
-samples_test = X_test.shape[0]/1
+samples_train = frac*X_train.shape[0]
+samples_test = frac*X_test.shape[0]
 image_dim=(1,img_x,img_y)
 
 # Training parameters
@@ -85,7 +86,7 @@ model.add_node(Dense(128, activation='relu'),name='dense0', input='flatten')
 model.add_node(Dense(classes, activation='softmax'),name='dense1', input='dense0')
 
 # output
-model.add_output(name='output', input='dense1', merge_mode='max')
+model.add_output(name='output', input='dense1')
 
 
 
@@ -148,7 +149,8 @@ def output_stuff(model, history):
 	json_string = model.to_json()
 	open(filename+'_model.json', 'w').write(json_string)
 
-	arch_dict=OrderedDict(( #could make this into a loop over model nodes in the future
+	#To-do:make this into a loop, or figure out how to properly extract weight information
+	arch_dict=OrderedDict((
 		('input',{'type':'input', 'input_name':'image', 'weights':None, 'biases':None, 'activation':None}),
 		('conv0', {'type':'Convolution2D', 'input_name':'input', 'weights':model.nodes['conv0'].get_weights()[0],'biases':model.nodes['conv0'].get_weights()[1],'activation':'relu', 'stride':1,'activities':None}), #get_outputs(model,'input','conv1',X_test[:test_datapoints])
 		('maxpool0', {'type':'MaxPooling2D', 'input_name':'conv0', 'weights':None, 'activation':None, 'biases':None,'stride':None, 'pool_type':'max', 'pool_size': ps,'activities':None}),
@@ -225,3 +227,8 @@ def output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes):
 output_stuff(model, history)
 conv_nodes, avg_pool_nodes, max_pool_nodes = get_activities(model)
 output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes)
+
+guesses = np.argmax(get_outputs(model,'input','dense1',X_train[:train_datapoints]),axis=1)
+answers = y_train[:train_datapoints]
+error_rate=np.count_nonzero(guesses != answers)/float(len(answers))
+print (error_rate)

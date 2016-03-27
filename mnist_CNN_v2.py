@@ -29,16 +29,16 @@ from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
 
 # Hyperparameters
-filename='mnist_CNN_v2'
-batch_size = 64
+filename='mnist_CNN_v2_test'
+batch_size = 128
 classes = 10
-epochs = 20
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
 ps=1
-drop=0.5
+frac=0.001
+epochs = 2
 
 # MNIST data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -49,8 +49,8 @@ X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
-samples_train = X_train.shape[0]/10
-samples_test = X_test.shape[0]/10
+samples_train = frac*X_train.shape[0]
+samples_test = frac*X_test.shape[0]
 image_dim=(1,img_x,img_y)
 
 # Training parameters
@@ -58,7 +58,6 @@ train_datapoints=samples_train
 test_datapoints=samples_test
 Y_train = np_utils.to_categorical(y_train, classes)
 Y_test = np_utils.to_categorical(y_test, classes)
-
 
 '''
 Network
@@ -69,26 +68,29 @@ model = Graph()
 model.add_input(name='input', input_shape=image_dim)
 
 #1st conv layer
-model.add_node(Convolution2D(20, 5, 5, activation='linear'),name='conv0', input='input')
-model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool0', input='conv0')
-model.add_node(Dropout(drop),name='dropout0', input='maxpool0')
+model.add_node(Convolution2D(16, 5, 5, activation='relu',subsample=(1,1)),
+				name='conv0', input='input')
+model.add_node(AveragePooling2D(pool_size=(2, 2),strides=(2,2)),
+				name='avgpool0', input='conv0')
 
 #2nd conv layer
-model.add_node(Convolution2D(50, 5, 5, activation='linear'),name='conv1', input='dropout0')
-model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool1', input='conv1')
-model.add_node(Dropout(drop),name='dropout1', input='maxpool1')
+model.add_node(Convolution2D(64, 5, 5, activation='relu',subsample=(1,1)),
+				name='conv1', input='avgpool0')
+model.add_node(AveragePooling2D(pool_size=(2, 2),strides=(2,2)),
+				name='avgpool1', input='conv1')
 
 #flatten layer
-model.add_node(Flatten(),name='flatten', input='dropout1')
+model.add_node(Flatten(),name='flatten', input='avgpool1')
 
 #1st dense layer
-model.add_node(Dense(500, activation='linear'),name='dense0', input='flatten')
+model.add_node(Dense(2000, activation='relu'),name='dense0', input='flatten')
+model.add_node(Dropout(0.5),name='dropout0', input='dense0')
 
 #2d dense layer
-model.add_node(Dense(classes, activation='softmax'),name='dense1', input='dense0')
+model.add_node(Dense(classes, activation='softmax'),name='dense1', input='dropout0')
 
 # output
-model.add_output(name='output', input='dense1', merge_mode='softmax')
+model.add_output(name='output', input='dense1')
 
 
 
@@ -162,8 +164,6 @@ def output_stuff(model, history):
 		('dense1', {'type':'Dense', 'input_name':'dense0', 'weights':model.nodes['dense1'].get_weights()[0],'biases':model.nodes['dense1'].get_weights()[1], 'activation':'softmax', 'stride':1,'activities':None}),
 		('output', {'type':'output', 'input_name':'dense1', 'weights':None, 'biases':None, 'activation':None}),
 	))
-	# print ([get_outputs(model,'input',the_node,X_test[:test_datapoints]).shape for the_node in model.nodes])
-	# data=dumps(arch_dict)
 	with open(filename+"_arch.json","w") as datafile:
 		dump(arch_dict, datafile)
 
@@ -185,12 +185,12 @@ def output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes):
 	for i in range(len(conv_nodes)):
 		# Activations are 4-D tensors with (test_datapoints, n_filters_i,shapex,shapey)
 		A_conv_raw = get_outputs(model,'input',conv_nodes[i],X_test[:test_datapoints])
-		# A_avg_raw = get_outputs(model,'input',avg_pool_nodes[i],X_test[:test_datapoints])
-		A_max_raw = get_outputs(model,'input',max_pool_nodes[i],X_test[:test_datapoints])
+		A_avg_raw = get_outputs(model,'input',avg_pool_nodes[i],X_test[:test_datapoints])
+		# A_max_raw = get_outputs(model,'input',max_pool_nodes[i],X_test[:test_datapoints])
 		# Average over test_datapoints to make a 3-D tensor (n_filters_i,shapex,shapey)
 		A_conv = np.average(A_conv_raw,axis=0)
-		# A_avg = np.average(A_avg_raw,axis=0)
-		A_max = np.average(A_max_raw,axis=0)
+		A_avg = np.average(A_avg_raw,axis=0)
+		# A_max = np.average(A_max_raw,axis=0)
 		#stats of all conv node activations in layer_i
 		mean_A_conv=np.average(A_conv, axis=(0,1,2))
 		std_A_conv=np.std(A_conv, axis=(0,1,2))
@@ -220,11 +220,14 @@ def output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes):
 		writer.writerow(['std (mean(feature map)) across trials ',std_mean_across_trials])
 		writer.writerow(['std (max(feature map)) across trials ',std_max_across_trials])
 
-		# writer.writerow(['mean(avg pool unit across trials) within feature map 0 ',[m[0] for m in A_avg[0]]])
-		writer.writerow(['mean(max pool unit across trials) within feature map 0 ',[m[0] for m in A_max[0]]])
+		writer.writerow(['mean(avg pool unit across trials) within feature map 0 ',[m[0] for m in A_avg[0]]])
+		# writer.writerow(['mean(max pool unit across trials) within feature map 0 ',[m[0] for m in A_max[0]]])
 
 	stats_file.close()
 
 output_stuff(model, history)
 conv_nodes, avg_pool_nodes, max_pool_nodes = get_activities(model)
 output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes)
+drop_act=get_outputs(model,'input','dropout0',X_test[:test_datapoints])
+print (drop_act.shape, drop_act,
+	len(model.nodes['dropout0'].get_weights()), model.nodes['dropout0'].get_weights())
