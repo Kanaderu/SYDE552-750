@@ -57,6 +57,7 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 											stride=info['stride']))
 			conn_dict[info['input_name']+'_to_'+key+'_pre']=nengo.Connection(
 											my_input,model_dict[key+'_pre'],synapse=None)
+			probe_dict[key+'_pre']=nengo.Probe(model_dict[key+'_pre'])
 			#sublayer that receives feedforward from above and feedback from sal
 			my_input=model_dict[key+'_pre']
 			shape_in=my_input.output.shape_out
@@ -65,6 +66,7 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 			conn_dict[key+'_pre'+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
 			#FB connections built in method build_salience_layers
+			probe_dict[key]=nengo.Probe(model_dict[key])
 
 		elif info['type']=='MaxPooling2D':
 			my_input=model_dict[info['input_name']]
@@ -89,13 +91,14 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 			model_dict[key] = nengo.Node(Flatten(shape_in,shape_out))
 			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
+			probe_dict[key]=nengo.Probe(model_dict[key])			
 
 		elif info['type']=='Dense':
 			my_input=model_dict[info['input_name']]
 			shape_in=my_input.output.shape_out
 			model_dict[key] = nengo.Node(Dense_1d(shape_in, info['weights'].shape[1],
 											weights=info['weights'],activation=info['activation'],
-											biases=info['biases']))
+											biases=None))
 			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
 			probe_dict[key]=nengo.Probe(model_dict[key])
@@ -112,7 +115,7 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 
 	return
 
-def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,tau_FB):
+def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict):
 
 	for key, info in arch_dict.items():
 
@@ -133,8 +136,9 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,tau_FB):
 			my_name='sal_C_'+key
 			shape_in=my_F.output.shape_out
 			shape_out=shape_in
+			comp=FB_dict[key]['competition']
 			model_dict[my_name] = nengo.Node(Sal_C(shape_in,shape_out,
-											competition='none'))
+											competition=comp)) #softmax
 			conn_dict[last_name+'_to_'+my_name]=nengo.Connection(
 											my_F,model_dict[my_name],synapse=None)
 			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
@@ -145,15 +149,18 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,tau_FB):
 			my_name='sal_B_near_'+key
 			shape_in=my_C.output.shape_out
 			shape_out=model_dict[key].output.shape_out #back to (filters,convN_x, convN_y)
+			FB_near_type=FB_dict[key]['FB_near_type']
+			k_FB=FB_dict[key]['k_FB']
 			model_dict[my_name] = nengo.Node(Sal_B_near(shape_in,shape_out,
-											feedback='constant'))
+											feedback=FB_near_type,k_FB=k_FB))
 			conn_dict[last_name+'_to_'+my_name]=nengo.Connection(
 											my_C,model_dict[my_name],synapse=None)
 			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
 
 			#connect B back to conv
+			tau_FB_near=FB_dict[key]['tau_FB_near']
 			conn_dict[my_name+'_to_'+key]=nengo.Connection(
-											model_dict[my_name],model_dict[key],synapse=tau_FB)
+											model_dict[my_name],model_dict[key],synapse=tau_FB_near)
 
 			#B_far unit
 			# my_F=model_dict[my_name] #input C unit
@@ -166,7 +173,7 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,tau_FB):
 			# 								my_input,model_dict[my_name],synapse=None)
 			# probe_dict[my_name]=nengo.Probe(model_dict[my_name])
 
-def build_model(arch_dict,X_train,frac,pt,tau_FB):
+def build_model(arch_dict,X_train,frac,pt,FB_dict):
 	
 	print 'Building the Network...'
 	model_dict={}
@@ -180,7 +187,7 @@ def build_model(arch_dict,X_train,frac,pt,tau_FB):
 
 	with model:
 		build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,X_train[:n_images],pt)
-		build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,tau_FB)
+		build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict)
 	return model, model_dict, conn_dict, probe_dict
 
 def simulate_error_rate(model,data,labels,probe_dict,frac,pt):
@@ -192,6 +199,8 @@ def simulate_error_rate(model,data,labels,probe_dict,frac,pt):
 	guesses = sim.data[probe_dict['output_probe']].ravel()
 	answers = labels[:n_images]
 	error=np.count_nonzero(guesses != answers)/float(len(answers))
+	print 'answers', answers
+	print 'guesses', guesses
 	return sim, error
 
 def main():
@@ -200,13 +209,40 @@ def main():
 	data=(X_train,y_train)
 	filename='mnist_CNN_v1_relu_pool1'
 	arch_dict = import_keras_json(filename)
-	pt=0.002 #image presentation time
+	pt=0.001 #image presentation time, larger = more time for feedback
 	frac=0.001 #fraction of dataset to simulate
-	tau_FB=0.001
-	model, model_dict, conn_dict, probe_dict = build_model(arch_dict,data[0],frac,pt,tau_FB)
+
+	FB_dict={}
+	for key, info in arch_dict.items():
+		if key == 'conv0':
+			FB_dict[key] = {
+				'competition': 'none',
+				'FB_near':True,
+				'FB_near_type': 'constant',
+				'tau_FB_near': 0.001,
+				'k_FB': 0.001, #>0.001 => high error
+				'FB_far': False,
+				}
+		if key == 'conv1':
+			FB_dict[key] = {
+				'competition': 'none',
+				'FB_near':True,
+				'FB_near_type': 'constant',
+				'tau_FB_near': 0.001,
+				'k_FB': 0.001, #>0.001 => high error
+				'FB_far': False,
+				}
+
+	model, model_dict, conn_dict, probe_dict = build_model(arch_dict,data[0],frac,pt,FB_dict)
 	sim, error=simulate_error_rate(model,data[0],data[1],probe_dict,frac,pt)
-	print 'sal B near probe',sim.data[probe_dict['sal_B_near_conv0']].sum()
-	print 'dense1 probe',sim.data[probe_dict['dense1']].sum()
+	# print 'conv0 pre probe FM0',sim.data[probe_dict['conv0_pre']][7].reshape((32,26,26))[0]
+	# print 'conv0 post probe FM0',sim.data[probe_dict['conv0']][7].reshape((32,26,26))[0]
+	# print 'sal_B_near_0 probe FM0',sim.data[probe_dict['sal_B_near_conv0']][7].reshape((32,26,26))[0][0]
+	# print 'conv0 pre probe FM1',sim.data[probe_dict['conv0_pre']][1].reshape((32,26,26))[1]
+	# print 'conv0 post probe FM1',sim.data[probe_dict['conv0']][1].reshape((32,26,26))[1]
+	# print 'sal_B_near_0 probe FM1',sim.data[probe_dict['sal_B_near_conv0']][1].reshape((32,26,26))[1][0]	
+	# print 'dense0 probe',sim.data[probe_dict['dense0']].sum()
+	# print 'dense1 probe',sim.data[probe_dict['dense1']].sum()
 	print 'error rate', error
 
 main()

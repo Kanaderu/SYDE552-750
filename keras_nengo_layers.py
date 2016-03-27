@@ -237,10 +237,11 @@ class Sal_C(Process):
 
 class Sal_B_near(Process):
 
-	def __init__(self, shape_in, shape_out, feedback='constant'): #yeahright
+	def __init__(self, shape_in, shape_out, feedback='constant',k_FB=1.0e-5): #yeahright
 		self.shape_in = shape_in
 		self.shape_out = tuple(shape_out)
 		self.feedback = feedback
+		self.k_FB = k_FB #keeps feedback from exploding
 		super(Sal_B_near, self).__init__(
 			default_size_in=np.prod(self.shape_in),
 			default_size_out=np.prod(self.shape_out))
@@ -253,7 +254,8 @@ class Sal_B_near(Process):
 			if self.feedback == 'constant':
 				#(n_FM,x,y) shape array filled with C value for corresponding feature map
 				xy_shape=self.shape_out[1:]
-				y=np.array([np.ones((xy_shape)) * xi for xi in x])*1.0e-5
+				y=np.array([np.ones((xy_shape)) * xi for xi in x])
+				y*=self.k_FB #prevent explosion
 				# print 'to B_near',x.shape,'from B_near',y.shape
 			elif self.feedback == 'none':
 				y=np.zeros((self.shape_out))
@@ -312,9 +314,9 @@ class Dense_1d(Process):
 				y = np.maximum(x_post,np.zeros((x_post.shape)))
 			elif self.activation == 'linear':
 				y = x_post
-			
-			y += self.biases
 
+			if self.biases is not None:			
+				y += self.biases
 			return y.ravel()
 
 		return step_dense1d
