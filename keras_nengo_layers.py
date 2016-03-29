@@ -255,8 +255,8 @@ class Sal_F(Process):
 
 		def step_F(t, x):
 			x = x.reshape(shape_in)
-			y = np.sum(x,axis=(1,2))
-			# y = np.average(x,axis=(1,2)) #TODO: adjust k_FB to make this work
+			# y = np.sum(x,axis=(1,2))
+			y = np.average(x,axis=(1,2)) #TODO: adjust k_FB to make this work
 			# print 'from F',y.shape,
 			return y.ravel()
 
@@ -292,7 +292,7 @@ class Sal_C(Process):
 
 class Sal_B_near(Process):
 
-	def __init__(self, shape_in, shape_out, feedback_near='constant',k_FB_near=1.0e-5): #yeahright
+	def __init__(self, shape_in, shape_out, feedback_near, k_FB_near): #yeahright
 		self.shape_in = shape_in
 		self.shape_out = tuple(shape_out)
 		self.feedback_near = feedback_near
@@ -315,7 +315,7 @@ class Sal_B_near(Process):
 				y=np.zeros((self.shape_out))
 			#TODO - feedback proportional to activation of each x,y unit in each FM
 			#TODO - feedback with modulatory inputs
-			y*=self.k_FB #prevent explosion
+			y*=self.k_FB
 			return y.ravel()
 
 		return step_B_near
@@ -323,7 +323,7 @@ class Sal_B_near(Process):
 
 class Sal_B_far(Process):
 
-	def __init__(self, shape_in, shape_out, weight, feedback_far='dense_inverse',k_FB_far=1e-5): #yeahright
+	def __init__(self, shape_in, shape_out, weight, feedback_far, k_FB_far): #yeahright
 		self.shape_in = shape_in
 		self.shape_out = shape_out
 		self.W = weight

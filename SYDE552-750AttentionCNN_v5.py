@@ -252,15 +252,42 @@ def simulate_error_rate(model,data,labels,probe_dict,frac,pt):
 	results['y_true']=y_true
 	return sim, results
 
+def plot_features(layer,image,sim,model_dict,probe_dict,pt,frac):
+
+	sal_vs_time=[] #(FM_activities,timesteps)
+	data=sim.data[probe_dict[layer]] #(images*pt/dt,FMs)
+	FMs=data.shape[1]
+	timesteps=pt/0.001
+	images=data.shape[0]/timesteps
+	indices=np.arange(0,FMs,1)
+	activations=data.reshape((images, timesteps, FMs))
+	normed_activations=np.zeros((activations.shape))
+	for im in range(normed_activations.shape[0]):
+		for t in range(normed_activations.shape[1]):
+			norm=np.sum(activations[im][t])
+			for fm in range(normed_activations.shape[2]):
+				normed_activations[im][t][fm] = activations[im][t][fm]/norm
+
+	#image #, before and after feedback
+	fig=plt.figure(figsize=(16,8))
+	ax=fig.add_subplot(111)
+	ax.bar(indices,normed_activations[image][0],width=1,label='t=0.0',alpha=0.5,color='b')
+	ax.bar(indices,normed_activations[image][-1],width=1,label='t=%s' %timesteps,alpha=0.5, color='g')
+	ax.set_xlabel('Feature #')
+	ax.set_ylabel('Activation')
+	ax.set_xlim(0,FMs)
+	legend=ax.legend(loc='best',shadow=True)
+	plt.show()
+
 def main():
 
 	X_train, y_train, X_test, y_test = load_mnist()
 	data=(X_train,y_train)
-	filename='mnist_CNN_v2_all_epochs=1'
+	filename='mnist_CNN_v2_all_epochs=20'
 	# filename='mnist_CNN_v1_relu_pool1'
 	arch_dict = import_keras_json(filename)
-	pt=0.001 #image presentation time, larger = more time for feedback
-	frac=0.01 #fraction of dataset to simulate
+	pt=0.005 #image presentation time, larger = more time for feedback
+	frac=0.001 #fraction of dataset to simulate
 
 	FB_dict={}
 	for key, info in arch_dict.items():
@@ -269,34 +296,26 @@ def main():
 				'competition': 'none',
 				'FB_near_type': 'none',
 				'tau_FB_near': 0.001,
-				'k_FB_near': 0.0001, #>0.001 => high error
+				'k_FB_near': 100,
 				'FB_far_type': 'none',
 				'tau_FB_far': 0.001,
-				'k_FB_far': 0.001, 
+				'k_FB_far': 1, 
 				}
 		if key == 'conv1':
 			FB_dict[key] = {
-				'competition': 'none',
-				'FB_near_type': 'none',
+				'competition': 'softmax',
+				'FB_near_type': 'constant',
 				'tau_FB_near': 0.001,
-				'k_FB_near': 0.001,
+				'k_FB_near': 30,
 				'FB_far_type': 'none',
 				'tau_FB_far': 0.001,
-				'k_FB_far': 2, #>0.001=overflow
+				'k_FB_far': 1,
 				}
 
 	model, model_dict, conn_dict, probe_dict = build_model(arch_dict,data[0],frac,pt,FB_dict)
 	sim, results=simulate_error_rate(model,data[0],data[1],probe_dict,frac,pt)
-	# print 'conv0 pre probe FM0',sim.data[probe_dict['conv0_pre']][7].reshape((32,26,26))[0]
-	# print 'conv0 post probe FM0',sim.data[probe_dict['conv0']][7].reshape((32,26,26))[0]
-	# print 'sal_B_near_0 probe FM0',sim.data[probe_dict['sal_B_near_conv0']][7].reshape((32,26,26))[0][0]
-	# print 'conv0 pre probe FM1',sim.data[probe_dict['conv0_pre']][1].reshape((32,26,26))[1]
-	# print 'conv0 post probe FM1',sim.data[probe_dict['conv0']][1].reshape((32,26,26))[1]
-	# print 'sal_B_near_0 probe FM1',sim.data[probe_dict['sal_B_near_conv0']][1].reshape((32,26,26))[1][0]	
-	# print 'dense0 probe',sim.data[probe_dict['dense0']].sum()
-	# print 'dense1 probe',sim.data[probe_dict['dense1']].sum()
-	# print 'sal B far conv1', sim.data[probe_dict['sal_B_far_conv1']][1]
-	# print 'sal C conv0', sim.data[probe_dict['sal_C_conv0']][1]
+	plot_features('sal_F_conv1',0,sim,model_dict,probe_dict,pt,frac)
+
 	print 'results'
 	for key, item in results.items():
 		print key, '...', item
