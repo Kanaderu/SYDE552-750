@@ -183,111 +183,6 @@ class FeatureMap2d(Process):
 
         return step_conv2d
 
-
-class Sal_F(Process):
-
-	def __init__(self, shape_in, shape_out):  # sprq
-		self.shape_in = tuple(shape_in)
-		self.shape_out = shape_out
-		super(Sal_F, self).__init__(
-			default_size_in=np.prod(self.shape_in),
-			default_size_out=np.prod(self.shape_out))
-
-	def make_step(self, size_in, size_out, dt, rng):
-		assert size_in == np.prod(self.shape_in)
-		assert size_out == np.prod(self.shape_out)
-		shape_in = self.shape_in
-		shape_out = self.shape_out
-
-		def step_F(t, x):
-			x = x.reshape(shape_in)
-			y = np.sum(x,axis=(1,2))
-			# print 'from F',y.shape,
-			return y.ravel()
-
-		return step_F
-
-
-class Sal_C(Process):
-
-	def __init__(self, shape_in, shape_out, competition='softmax'):	#5643
-		self.shape_in = shape_in
-		self.shape_out = shape_out
-		self.competition = competition
-		super(Sal_C, self).__init__(
-			default_size_in=np.prod(self.shape_in),
-			default_size_out=np.prod(self.shape_out))
-
-	def make_step(self, size_in, size_out, dt, rng):
-		assert size_in == np.prod(self.shape_in)
-		assert size_out == np.prod(self.shape_out)
-
-		def step_C(t, x):
-			if self.competition == 'softmax':
-				y = np.divide(np.exp(x),np.sum((np.exp(x)))) #very slow, numbers too big
-				# print 'to C',x.shape,'from C',y.shape
-			elif self.competition == 'none':
-				y=x
-			#TODO - Walther and Koch inhibitory competition
-			#TODO - BG-type inhibitory competition
-			return y.ravel()
-
-		return step_C
-
-
-class Sal_B_near(Process):
-
-	def __init__(self, shape_in, shape_out, feedback='constant',k_FB=1.0e-5): #yeahright
-		self.shape_in = shape_in
-		self.shape_out = tuple(shape_out)
-		self.feedback = feedback
-		self.k_FB = k_FB #keeps feedback from exploding
-		super(Sal_B_near, self).__init__(
-			default_size_in=np.prod(self.shape_in),
-			default_size_out=np.prod(self.shape_out))
-
-	def make_step(self, size_in, size_out, dt, rng):
-		assert size_in == np.prod(self.shape_in)
-		assert size_out == np.prod(self.shape_out)
-
-		def step_B_near(t, x):
-			if self.feedback == 'constant':
-				#(n_FM,x,y) shape array filled with C value for corresponding feature map
-				xy_shape=self.shape_out[1:]
-				y=np.array([np.ones((xy_shape)) * xi for xi in x])
-				y*=self.k_FB #prevent explosion
-				# print 'to B_near',x.shape,'from B_near',y.shape
-			elif self.feedback == 'none':
-				y=np.zeros((self.shape_out))
-			#TODO - feedback proportional to activation of each x,y unit in each FM
-			#TODO - feedback with modulatory inputs
-			return y.ravel()
-
-		return step_B_near
-
-
-class Sal_B_far(Process):
-
-	def __init__(self, shape_in, shape_out, feedback_far='TODO'): #yeahright
-		self.shape_in = shape_in
-		self.shape_out = tuple(shape_out)
-		self.feedback_far = feedback_far
-		super(Sal_B_far, self).__init__(
-			default_size_in=np.prod(self.shape_in),
-			default_size_out=np.prod(self.shape_out))
-
-	def make_step(self, size_in, size_out, dt, rng):
-		assert size_in == np.prod(self.shape_in)
-		assert size_out == np.prod(self.shape_out)
-
-		def step_B_far(t, x):
-			#TODO - feedback constant value in shape of forward kernel
-			#TODO - feedback constant value multiplied by forward kernel
-			return y.ravel()
-
-		return step_B_far
-
-
 class Dense_1d(Process):
 
 	def __init__(self, shape_in, shape_out, weights, biases, activation='linear'): 
@@ -325,7 +220,7 @@ class Dense_1d(Process):
 class Flatten(Process):
 
 	def __init__(self, shape_in, shape_out):
-		self.shape_in = tuple(shape_in)
+		self.shape_in = shape_in
 		self.shape_out = shape_out
 		super(Flatten, self).__init__(
 			default_size_in=np.prod(self.shape_in),
@@ -341,3 +236,114 @@ class Flatten(Process):
 			return y
 
 		return step_flatten
+
+
+class Sal_F(Process):
+
+	def __init__(self, shape_in, shape_out):  # sprq
+		self.shape_in = tuple(shape_in)
+		self.shape_out = shape_out
+		super(Sal_F, self).__init__(
+			default_size_in=np.prod(self.shape_in),
+			default_size_out=np.prod(self.shape_out))
+
+	def make_step(self, size_in, size_out, dt, rng):
+		assert size_in == np.prod(self.shape_in)
+		assert size_out == np.prod(self.shape_out)
+		shape_in = self.shape_in
+		shape_out = self.shape_out
+
+		def step_F(t, x):
+			x = x.reshape(shape_in)
+			y = np.sum(x,axis=(1,2))
+			# y = np.average(x,axis=(1,2)) #TODO: adjust k_FB to make this work
+			# print 'from F',y.shape,
+			return y.ravel()
+
+		return step_F
+
+
+class Sal_C(Process):
+
+	def __init__(self, shape_in, shape_out, competition='softmax'):	#5643
+		self.shape_in = shape_in
+		self.shape_out = shape_out
+		self.competition = competition
+		super(Sal_C, self).__init__(
+			default_size_in=np.prod(self.shape_in),
+			default_size_out=np.prod(self.shape_out))
+
+	def make_step(self, size_in, size_out, dt, rng):
+		assert size_in == np.prod(self.shape_in)
+		assert size_out == np.prod(self.shape_out)
+
+		def step_C(t, x):
+			if self.competition == 'softmax':
+				y = np.divide(np.exp(x),np.sum((np.exp(x)))) #very slow, numbers too big
+				# print 'to C',x.shape,'from C',y.shape
+			elif self.competition == 'none':
+				y=x
+			#TODO - Walther and Koch inhibitory competition
+			#TODO - BG-type inhibitory competition
+			return y.ravel()
+
+		return step_C
+
+
+class Sal_B_near(Process):
+
+	def __init__(self, shape_in, shape_out, feedback_near='constant',k_FB_near=1.0e-5): #yeahright
+		self.shape_in = shape_in
+		self.shape_out = tuple(shape_out)
+		self.feedback_near = feedback_near
+		self.k_FB = k_FB_near #keeps feedback from exploding
+		super(Sal_B_near, self).__init__(
+			default_size_in=np.prod(self.shape_in),
+			default_size_out=np.prod(self.shape_out))
+
+	def make_step(self, size_in, size_out, dt, rng):
+		assert size_in == np.prod(self.shape_in)
+		assert size_out == np.prod(self.shape_out)
+
+		def step_B_near(t, x):
+			if self.feedback_near == 'constant':
+				#(n_FM,x,y) shape array filled with C value for corresponding feature map
+				xy_shape=self.shape_out[1:]
+				y=np.array([np.ones((xy_shape)) * xi for xi in x])
+				# print 'to B_near',x.shape,'from B_near',y.shape
+			elif self.feedback_near == 'none':
+				y=np.zeros((self.shape_out))
+			#TODO - feedback proportional to activation of each x,y unit in each FM
+			#TODO - feedback with modulatory inputs
+			y*=self.k_FB #prevent explosion
+			return y.ravel()
+
+		return step_B_near
+
+
+class Sal_B_far(Process):
+
+	def __init__(self, shape_in, shape_out, weight, feedback_far='dense_inverse',k_FB_far=1e-5): #yeahright
+		self.shape_in = shape_in
+		self.shape_out = shape_out
+		self.W = weight
+		self.feedback_far = feedback_far
+		self.k_FB=k_FB_far
+		super(Sal_B_far, self).__init__(
+			default_size_in=np.prod(self.shape_in),
+			default_size_out=np.prod(self.shape_out))
+
+	def make_step(self, size_in, size_out, dt, rng):
+		assert size_in == np.prod(self.shape_in)
+		assert size_out == np.prod(self.shape_out)
+
+		def step_B_far(t, x):
+			x = x.reshape(self.shape_in)
+			if self.feedback_far == 'dense_inverse':
+				y=np.dot(x,np.linalg.pinv(self.W))
+			elif self.feedback_far == 'none':
+				y=np.zeros((self.shape_out))
+			y*=self.k_FB
+			return y.ravel()
+
+		return step_B_far
