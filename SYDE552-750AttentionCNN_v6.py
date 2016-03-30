@@ -141,7 +141,7 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 
 	return
 
-def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict):
+def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict,stim_dict):
 
 	for key, info in arch_dict.items():
 
@@ -170,6 +170,10 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict):
 			conn_dict[last_name+'_to_'+my_name]=nengo.Connection(
 											my_input,model_dict[my_name],synapse=None)
 			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
+			#stimulate specific features externally
+			model_dict['stim_'+my_name]=nengo.Node(stim_dict[key],size_out=shape_in)
+			conn_dict['stim_'+my_name+'_to_'+my_name]=nengo.Connection(
+											model_dict['stim_'+my_name],model_dict[my_name],synapse=None)			
 
 			#B_near unit
 			#assumption: salience of FM_n feeds back additively/multiplicatively to FM_n-1, not farther
@@ -215,7 +219,7 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict):
 												model_dict[my_name],my_output,synapse=tau_FB_far)
 
 
-def build_model(arch_dict,X_train,frac,pt,FB_dict):
+def build_model(arch_dict,X_train,frac,pt,FB_dict,stim_dict):
 	
 	print 'Building the Network...'
 	model_dict={}
@@ -229,7 +233,7 @@ def build_model(arch_dict,X_train,frac,pt,FB_dict):
 
 	with model:
 		build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,X_train[:n_images],pt)
-		build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict)
+		build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict,stim_dict)
 	return model, model_dict, conn_dict, probe_dict
 
 def get_error(sim,model,data,labels,probe_dict,n_images,pt):
@@ -259,7 +263,7 @@ def get_error(sim,model,data,labels,probe_dict,n_images,pt):
 	results['y_true']=y_true
 	return results
 
-def plot_features(layer,image,sim,model_dict,probe_dict,pt,frac):
+def plot_saliences(layer,image,sim,model_dict,probe_dict,pt):
 
 	print 'Plotting Feature Activations...'
 	sal_vs_time=[] #(FM_activities,timesteps)
@@ -284,15 +288,15 @@ def plot_features(layer,image,sim,model_dict,probe_dict,pt,frac):
 	ax.set_xlabel('Feature #')
 	ax.set_ylabel('Activation')
 	ax.set_xlim(0,FMs)
+	ax.set_title('Layer %s' %layer)
 	legend=ax.legend(loc='best',shadow=True)
 	plt.show()
 
-def plot_outputs(image,sim,model_dict,probe_dict,pt,frac):
+def plot_outputs(image,sim,model_dict,probe_dict,pt):
 
 	print 'Plotting Class Activations...'
 	sal_vs_time=[] #(FM_activities,timesteps)
 	data=sim.data[probe_dict['pre_output']]
-	print data.shape
 	timesteps=pt/0.001
 	images=data.shape[0]/timesteps
 	classes=data.shape[1]
@@ -304,7 +308,6 @@ def plot_outputs(image,sim,model_dict,probe_dict,pt,frac):
 			norm=np.sum(activations[im][t])
 			for fm in range(normed_activations.shape[2]):
 				normed_activations[im][t][fm] = activations[im][t][fm]/norm
-	print normed_activations
 	#image #, before and after feedback
 	fig=plt.figure(figsize=(16,8))
 	ax=fig.add_subplot(111)
@@ -316,40 +319,87 @@ def plot_outputs(image,sim,model_dict,probe_dict,pt,frac):
 	legend=ax.legend(loc='best',shadow=True)
 	plt.show()
 
+def plot_image(image,layer,data,sim,arch_dict,model_dict,probe_dict,pt,n_images):
+
+	print 'Printing image...'
+	img=data[image][0] #expects training data as 4D tuple (images, channels, img_x, img_y)
+	weights=arch_dict['conv%s' %layer]['weights'] #expects 4D tuple (FMs, channels, ker_x, ker_y)
+	layer_size=model_dict['conv%s' %layer].output.shape_in
+	#expects (pt*n_images, np.prod(FMs, channels, ker_x, ker_y))
+	#retrieve FM values at beginning and end of presentation time
+	probe_start=sim.data[probe_dict['conv%s' %layer]][image*pt/0.001].reshape(layer_size)
+	probe_end=sim.data[probe_dict['conv%s' %layer]][(image+1)*pt/0.001-1].reshape(layer_size)
+	probe_sal_end=sim.data[probe_dict['sal_F_conv%s' %layer]][(image+1)*pt/0.001-1]
+	FM_max=np.argmax(probe_sal_end)
+	# sum the FMs, which are already weighed through feedback, to reconstruct the image
+	redraw_start=np.average(probe_start,axis=0)
+	redraw_end=np.average(probe_end,axis=0)
+	print probe_start[10], probe_end[10], redraw_start, redraw_end
+
+	fig=plt.figure(figsize=(16,8))
+	ax=fig.add_subplot(131)
+	ax.imshow(weights[FM_max][0], cmap='gray')
+	ax.set_title('kernel %s' %FM_max)
+	ax=fig.add_subplot(132)
+	ax.imshow(probe_start[FM_max], cmap='gray', vmin=0)
+	ax.set_title('FM %s activation' %FM_max)
+	ax=fig.add_subplot(133)
+	ax.imshow(probe_end[FM_max], cmap='gray', vmin=0)
+	ax.set_title('FM %s activation end' %FM_max)
+	plt.show()
+
+	fig=plt.figure(figsize=(16,8))
+	ax=fig.add_subplot(131)
+	ax.imshow(img, cmap='gray')
+	ax.set_title('original image')
+	ax=fig.add_subplot(132)
+	ax.imshow(redraw_start, cmap='gray', vmin=0)
+	ax.set_title('sum of FMs, start of pt')
+	ax=fig.add_subplot(133)
+	ax.imshow(redraw_end, cmap='gray', vmin=0)
+	ax.set_title('sum of FMs, end of pt')
+	plt.tight_layout()
+	plt.show()
+
 def main():
 
 	X_train, y_train, X_test, y_test = load_mnist()
 	data=(X_train,y_train)
 	filename='mnist_CNN_v2_all_epochs=20'
-	# filename='mnist_CNN_v1_relu_pool1'
 	arch_dict = import_keras_json(filename)
 	pt=0.005 #image presentation time, larger = more time for feedback
 	frac=0.001 #fraction of dataset to simulate
 
 	FB_dict={}
+	stim_dict={}
 	for key, info in arch_dict.items():
 		if key == 'conv0':
 			FB_dict[key] = {
-				'competition': 'none',
-				'FB_near_type': 'none',
+				'competition': 'softmax', #'none', 'softmax'
+				'FB_near_type': 'constant', #'none', 'constant'
 				'tau_FB_near': 0.001,
-				'k_FB_near': 100,
-				'FB_far_type': 'none',
+				'k_FB_near': 30,
+				'FB_far_type': 'none', #'none', 'dense_inverse'
 				'tau_FB_far': 0.001,
 				'k_FB_far': 1, 
 				}
+			stim_dict[key] = np.zeros((info['weights'].shape[0]))
+			stim_dict[key][10] = 100
 		if key == 'conv1':
 			FB_dict[key] = {
 				'competition': 'softmax',
-				'FB_near_type': 'constant',
+				'FB_near_type': 'none',
 				'tau_FB_near': 0.001,
-				'k_FB_near': 30,
+				'k_FB_near': 5,
 				'FB_far_type': 'none',
 				'tau_FB_far': 0.001,
 				'k_FB_far': 1,
 				}
+			stim_dict[key] = np.zeros((info['weights'].shape[0]))
+			stim_dict[key][0] = 0
 
-	model, model_dict, conn_dict, probe_dict = build_model(arch_dict,data[0],frac,pt,FB_dict)
+
+	model, model_dict, conn_dict, probe_dict = build_model(arch_dict,data[0],frac,pt,FB_dict,stim_dict)
 	
 	print 'Running the simulation...'
 	sim = nengo.Simulator(model)
@@ -359,8 +409,10 @@ def main():
 	results=get_error(sim,model,data[0],data[1],probe_dict,n_images,pt)
 
 	image_num=0
-	plot_features('sal_F_conv1',image_num,sim,model_dict,probe_dict,pt,frac)
-	plot_outputs(image_num,sim,model_dict,probe_dict,pt,frac)
+	layer=0
+	plot_saliences('sal_F_conv0',image_num,sim,model_dict,probe_dict,pt)
+	# plot_outputs(image_num,sim,model_dict,probe_dict,pt)
+	plot_image(image_num,layer,data[0],sim,arch_dict,model_dict,probe_dict,pt,n_images)
 
 	print 'results'
 	for key, item in results.items():
