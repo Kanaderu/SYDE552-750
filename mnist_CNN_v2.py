@@ -29,16 +29,15 @@ from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
 
 # Hyperparameters
-filename='mnist_CNN_v2_all_epochs=20'
+filename='mnist_CNN_v2_test'
 batch_size = 128
 classes = 10
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
-ps=1
-frac=1
-epochs = 20
+frac=0.0001
+epochs = 2
 
 # MNIST data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -69,33 +68,37 @@ model.add_input(name='input', input_shape=image_dim)
 #1st conv layer
 FM1=32
 k1=3
-ps1=1
+ps1=2
 s1=int(np.ceil(img_x/ps1)-k1+1)
 model.add_node(Convolution2D(FM1, k1, k1, activation='relu'),name='conv0', input='input')
-model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool0', input='conv0')
-model.add_node(AveragePooling2D(pool_size=(s1,s1)),name='sal_f0', input='conv0')
+model.add_node(MaxPooling2D(pool_size=(ps1, ps1)),name='maxpool0', input='conv0')
+model.add_node(Dropout(0.5),name='drop0',input='maxpool0')
+model.add_node(AveragePooling2D(pool_size=(s1,s1)),name='sal_f0', input='maxpool0')
 model.add_node(Flatten(),name='flat_sal_f0', input='sal_f0')
 #2nd conv layer
 FM2=32
 k2=3
-ps2=1
+ps2=2
 s2=int(np.ceil(s1/ps2)-k2+1)
-model.add_node(Convolution2D(FM2, k2, k2, activation='relu'),name='conv1', input='maxpool0')
-model.add_node(MaxPooling2D(pool_size=(ps, ps)),name='maxpool1', input='conv1')
-model.add_node(AveragePooling2D(pool_size=(s2, s2)),name='sal_f1', input='conv0')
+model.add_node(Convolution2D(FM2, k2, k2, activation='relu'),name='conv1', input='drop0')
+model.add_node(MaxPooling2D(pool_size=(ps2, ps2)),name='maxpool1', input='conv1')
+model.add_node(Dropout(0.5),name='drop1',input='maxpool1')
+model.add_node(AveragePooling2D(pool_size=(s2, s2)),name='sal_f1', input='maxpool1')
 model.add_node(Flatten(),name='flat_sal_f1', input='sal_f1')
 #1st to 2nd layer Saliency connection
 model.add_node(Dense(FM2,activation='relu'),name='sal_FB_12',
 							inputs=['flat_sal_f0','flat_sal_f1'],merge_mode='sum')
 #flatten layer
-model.add_node(Flatten(),name='flatten', input='maxpool1')
+model.add_node(Flatten(),name='flatten', input='drop1')
 model.add_node(Flatten(),name='flat_sal_FB_12', input='sal_FB_12')
 #1st dense layer
 model.add_node(Dense(128, activation='relu'),name='dense0', input='flatten')
 model.add_node(Dense(FM2, activation='relu'),name='denseS0', input='flat_sal_FB_12')
+model.add_node(Dropout(0.5),name='drop2',input='dense0')
+model.add_node(Dropout(0.5),name='dropS2',input='denseS0')
 #2d dense layer
-model.add_node(Dense(classes, activation='softmax'),name='dense1', input='dense0')
-model.add_node(Dense(classes, activation='softmax'),name='denseS1', input='denseS0')
+model.add_node(Dense(classes, activation='softmax'),name='dense1', input='drop2')
+model.add_node(Dense(classes, activation='softmax'),name='denseS1', input='dropS2')
 # output
 model.add_output(name='output', inputs=['dense1','denseS1'],merge_mode='sum')
 
@@ -111,6 +114,8 @@ history=model.fit({'input':X_train[:train_datapoints], 'output':Y_train[:train_d
             validation_data={'input':X_test[:test_datapoints], 'output':Y_test[:test_datapoints]})
 
 #TODO automate this with model, weight information (gave up after 3 hrs and no Keras.usergroups response)
+#Note: skip adding dropout layers to this dictionary: treat them as though their inputs feed directly
+	#to inputs of the next population
 arch_dict=OrderedDict((
 	('input',			{'type':'input', 			'input_name':'image', 							'weights':None, 									'biases':None, 										'activation':None 																}),
 	('conv0', 			{'type':'Convolution2D', 	'input_name':'input', 							'weights':model.nodes['conv0'].get_weights()[0],	'biases':model.nodes['conv0'].get_weights()[1],		'activation':'relu', 	'stride':1, 											}),
@@ -243,5 +248,11 @@ guesses = np.argmax(output1+output2, axis=1)
 answers = y_train[:train_datapoints]
 error_rate=np.count_nonzero(guesses != answers)/float(len(answers))
 print ('total error rate',error_rate)
-# print (model.nodes['sal_FB_12'].get_weights())
+print (model.nodes['conv0'].get_weights()[0].shape)
+print (model.nodes['conv1'].get_weights()[0].shape)
+print (get_outputs(model,'input','flat_sal_f0',X_test[:test_datapoints]).shape)
+print (get_outputs(model,'input','flat_sal_f1',X_test[:test_datapoints]).shape)
+print (get_outputs(model,'input','maxpool0',X_test[:test_datapoints]).shape)
+print (get_outputs(model,'input','maxpool1',X_test[:test_datapoints]).shape)
+# print (model.nodes['drop0'].get_config())
 # print ([get_outputs(model,'input',the_node,X_test[:test_datapoints]).shape for the_node in model.nodes])

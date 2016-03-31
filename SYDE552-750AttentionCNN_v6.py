@@ -316,6 +316,7 @@ def plot_outputs(image,sim,model_dict,probe_dict,pt):
 	ax.set_xlabel('Class #')
 	ax.set_ylabel('Activation')
 	plt.xticks(np.arange(0,classes,1))
+	ax.set_title('Output')
 	legend=ax.legend(loc='best',shadow=True)
 	plt.show()
 
@@ -334,7 +335,7 @@ def plot_image(image,layer,data,sim,arch_dict,model_dict,probe_dict,pt,n_images)
 	# sum the FMs, which are already weighed through feedback, to reconstruct the image
 	redraw_start=np.average(probe_start,axis=0)
 	redraw_end=np.average(probe_end,axis=0)
-	print probe_start[10], probe_end[10], redraw_start, redraw_end
+	# print probe_start[10], probe_end[10], redraw_start, redraw_end
 
 	fig=plt.figure(figsize=(16,8))
 	ax=fig.add_subplot(131)
@@ -364,11 +365,11 @@ def plot_image(image,layer,data,sim,arch_dict,model_dict,probe_dict,pt,n_images)
 def main():
 
 	X_train, y_train, X_test, y_test = load_mnist()
-	data=(X_train,y_train)
+	data=(X_test,y_test)
 	filename='mnist_CNN_v2_all_epochs=20'
 	arch_dict = import_keras_json(filename)
 	pt=0.005 #image presentation time, larger = more time for feedback
-	frac=0.001 #fraction of dataset to simulate
+	frac=0.1 #fraction of dataset to simulate
 
 	FB_dict={}
 	stim_dict={}
@@ -378,16 +379,16 @@ def main():
 				'competition': 'softmax', #'none', 'softmax'
 				'FB_near_type': 'constant', #'none', 'constant'
 				'tau_FB_near': 0.001,
-				'k_FB_near': 30,
+				'k_FB_near': 10,
 				'FB_far_type': 'none', #'none', 'dense_inverse'
 				'tau_FB_far': 0.001,
 				'k_FB_far': 1, 
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
-			stim_dict[key][10] = 100
+			stim_dict[key][10] = 0
 		if key == 'conv1':
 			FB_dict[key] = {
-				'competition': 'softmax',
+				'competition': 'none',
 				'FB_near_type': 'none',
 				'tau_FB_near': 0.001,
 				'k_FB_near': 5,
@@ -410,9 +411,9 @@ def main():
 
 	image_num=0
 	layer=0
-	plot_saliences('sal_F_conv0',image_num,sim,model_dict,probe_dict,pt)
+	# plot_saliences('sal_F_conv0',image_num,sim,model_dict,probe_dict,pt)
 	# plot_outputs(image_num,sim,model_dict,probe_dict,pt)
-	plot_image(image_num,layer,data[0],sim,arch_dict,model_dict,probe_dict,pt,n_images)
+	# plot_image(image_num,layer,data[0],sim,arch_dict,model_dict,probe_dict,pt,n_images)
 
 	print 'results'
 	for key, item in results.items():
