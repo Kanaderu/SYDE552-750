@@ -107,10 +107,12 @@ class Pool2d(Process):
         self.kind = kind
 
         nc, nxi, nxj = self.shape_in
-        nyi = 1 + int(np.ceil(float(nxi - size) / self.stride))
-        nyj = 1 + int(np.ceil(float(nxj - size) / self.stride))
+        # nyi = 1 + int(np.ceil(float(nxi - size) / self.stride))
+        nyi = int(np.floor((1+max(int((nxi-1)/float(stride)),0))/size))
+        # nyj = 1 + int(np.ceil(float(nxj - size) / self.stride))
+        nyj = int(np.floor((1+max(int((nxj-1)/float(stride)),0))/size))
         self.shape_out = (nc, nyi, nyj)
-
+        # print self.shape_in, self.shape_out
         super(Pool2d, self).__init__(
             default_size_in=np.prod(self.shape_in),
             default_size_out=np.prod(self.shape_out))
@@ -123,7 +125,8 @@ class Pool2d(Process):
         s = self.size
         st = self.stride
         kind = self.kind
-        nxi2, nxj2 = nyi * st, nyj * st
+        #(nyi - 1) * st + s, (nyj - 1) * st + s
+        nxi2, nxj2 = nyi, nyj
 
         def step_pool2d(t, x):
             x = x.reshape(nc, nxi, nxj)
@@ -132,7 +135,7 @@ class Pool2d(Process):
 
             for i in range(s):
                 for j in range(s):
-                    xij = x[:, i:min(nxi2+i, nxi):st, j:min(nxj2+j, nxj):st]
+                    xij = x[:, i:nxi2:st, j:nxj2:st]
                     ni, nj = xij.shape[-2:]
                     if kind == 'max':
                         y[:, :ni, :nj] = np.maximum(y[:, :ni, :nj], xij)
@@ -185,36 +188,37 @@ class FeatureMap2d(Process):
 
 class Dense_1d(Process):
 
-	def __init__(self, shape_in, shape_out, weights, biases, activation='linear'): 
-		self.shape_in = shape_in
-		self.shape_out = shape_out
-		self.weights = weights
-		self.biases = biases
-		self.activation = activation
-		super(Dense_1d, self).__init__(
-			default_size_in=np.prod(self.shape_in),
-			default_size_out=np.prod(self.shape_out))
+    def __init__(self, shape_in, shape_out, weights, biases, activation='linear'): 
+        self.shape_in = shape_in
+        self.shape_out = shape_out
+        self.weights = weights
+        self.biases = biases
+        self.activation = activation
+        super(Dense_1d, self).__init__(
+            default_size_in=np.prod(self.shape_in),
+            default_size_out=np.prod(self.shape_out))
 
-	def make_step(self, size_in, size_out, dt, rng):
-		assert size_in == np.prod(self.shape_in)
-		assert size_out == np.prod(self.shape_out)
+    def make_step(self, size_in, size_out, dt, rng):
+        assert size_in == np.prod(self.shape_in)
+        assert size_out == np.prod(self.shape_out)
 
-		def step_dense1d(t, x):
-			x = x.reshape(self.shape_in)
-			x_post = np.dot(x,self.weights)
-			
-			if self.activation == 'softmax':
-				y = np.array([np.exp(xi)/np.sum((np.exp(x_post))) for xi in x_post])
-			elif self.activation == 'relu':
-				y = np.maximum(x_post,np.zeros((x_post.shape)))
-			elif self.activation == 'linear':
-				y = x_post
+        def step_dense1d(t, x):
+            x = x.reshape(self.shape_in)
+            # print x.shape, self.weights.shape
+            x_post = np.dot(x,self.weights)
+            
+            if self.activation == 'softmax':
+                y = np.array([np.exp(xi)/np.sum((np.exp(x_post))) for xi in x_post])
+            elif self.activation == 'relu':
+                y = np.maximum(x_post,np.zeros((x_post.shape)))
+            elif self.activation == 'linear':
+                y = x_post
 
-			if self.biases is not None:			
-				y += self.biases
-			return y.ravel()
+            if self.biases is not None:         
+                y += self.biases
+            return y.ravel()
 
-		return step_dense1d
+        return step_dense1d
 
 
 class Flatten(Process):
@@ -236,6 +240,27 @@ class Flatten(Process):
 			return y
 
 		return step_flatten
+
+
+class Dropout(Process):
+
+    def __init__(self, shape_in, shape_out):
+        self.shape_in = shape_in
+        self.shape_out = shape_out
+        super(Dropout, self).__init__(
+            default_size_in=np.prod(self.shape_in),
+            default_size_out=np.prod(self.shape_out))
+
+    def make_step(self, size_in, size_out, dt, rng):
+        assert size_in == np.prod(self.shape_in)
+        assert size_out == np.prod(self.shape_out)
+
+        def step_flatten(t, x):
+            x=x.reshape(self.shape_in)
+            y=x.ravel()
+            return y
+
+        return step_flatten
 
 
 class Sal_F(Process):

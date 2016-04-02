@@ -52,7 +52,6 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 				shape_in=my_input.output.inputs.shape[1:]
 			else:
 				shape_in=my_input.output.shape_out
-			print 'conv shape in', shape_in
 			model_dict[key+'_pre'] = nengo.Node(Conv2d(shape_in, info['weights'],
 											activation=info['activation'], biases=info['biases'],
 											stride=info['stride']))
@@ -69,10 +68,20 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 			#FB connections built in method build_salience_layers
 			probe_dict[key]=nengo.Probe(model_dict[key])
 
+		elif info['type']=='Dense':
+			print key, shape_in, info['weights'].shape
+			my_input=model_dict[info['input_name']]
+			shape_in=my_input.output.shape_out
+			model_dict[key] = nengo.Node(Dense_1d(shape_in, info['weights'].shape[1],
+											weights=info['weights'],activation=info['activation'],
+											biases=info['biases']))
+			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
+											my_input,model_dict[key],synapse=None)
+			probe_dict[key]=nengo.Probe(model_dict[key])
+
 		elif info['type']=='MaxPooling2D':
 			my_input=model_dict[info['input_name']]
 			shape_in=my_input.output.shape_out
-			print 'maxpool shape in', shape_in
 			model_dict[key] = nengo.Node(Pool2d(shape_in, info['pool_size'],
 											kind='max',stride=info['stride']))
 			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
@@ -81,7 +90,6 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 		elif info['type']=='AveragePooling2D':
 			my_input=model_dict[info['input_name']]
 			shape_in=my_input.output.shape_out
-			print 'avgpool shape in', shape_in
 			model_dict[key] = nengo.Node(Pool2d(shape_in, info['pool_size'],
 											kind='avg',stride=info['stride']))
 			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
@@ -91,35 +99,29 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 			my_input=model_dict[info['input_name']]
 			shape_in=my_input.output.shape_out
 			shape_out=np.prod(my_input.output.shape_out)
-			print 'flatten shape in, out', shape_in, shape_out
 			model_dict[key] = nengo.Node(Flatten(shape_in,shape_out))
 			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
-			probe_dict[key]=nengo.Probe(model_dict[key])			
+			probe_dict[key]=nengo.Probe(model_dict[key])	
 
-		elif info['type']=='Dense':
-			my_input=model_dict[info['input_name']]
-			shape_in=my_input.output.shape_out
-			print 'dense shape in', shape_in
-			model_dict[key] = nengo.Node(Dense_1d(shape_in, info['weights'].shape[1],
-											weights=info['weights'],activation=info['activation'],
-											biases=info['biases']))
-			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
-											my_input,model_dict[key],synapse=None)
-			probe_dict[key]=nengo.Probe(model_dict[key])
-
-		elif info['type']=='DenseFB':
+		elif info['type']=='Flatten_Merge':
 			my_input1=model_dict[info['input_name'][0]] 
 			my_input2=model_dict[info['input_name'][1]]
 			shape_in=my_input1.output.shape_out
-			print 'dense fb shape in', shape_in
-			model_dict[key] = nengo.Node(Dense_1d(shape_in, info['weights'].shape[1],
-											weights=info['weights'],activation=info['activation'],
-											biases=info['biases']))
-			# conn_dict[info['input_name'][0]+'_to_'+key]=nengo.Connection( #FF from last sal layer
-			# 								my_input1,model_dict[key],synapse=None)
-			conn_dict[info['input_name'][1]+'_to_'+key]=nengo.Connection( #FF from conv layer
+			model_dict[key] = nengo.Node(Flatten(shape_in,shape_out))
+			conn_dict[info['input_name'][0]+'_to_'+key]=nengo.Connection( #from current sal layer
+											my_input1,model_dict[key],synapse=None)
+			conn_dict[info['input_name'][1]+'_to_'+key]=nengo.Connection( #from previous sal layer
 											my_input2,model_dict[key],synapse=None)
+			probe_dict[key]=nengo.Probe(model_dict[key])
+
+		elif info['type']=='Dropout':
+			my_input=model_dict[info['input_name']]
+			shape_in=my_input.output.shape_out
+			shape_out=shape_in
+			model_dict[key] = nengo.Node(Dropout(shape_in,shape_out))
+			conn_dict[info['input_name']+'_to_'+key]=nengo.Connection(
+											my_input,model_dict[key],synapse=None)
 			probe_dict[key]=nengo.Probe(model_dict[key])
 
 		elif info['type']=='output':		
@@ -198,7 +200,7 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict,stim
 
 			#B_far unit
 			#assumption: salience of FM_n feedsback to salience of FM_{n-1}, not to FM_n-1
-			#assumption: contribution of sal_F_n-1 to sal_F_n is learned in Keras and inverted 
+			#assumption: contribution of sal_F_n-1 to sal_F_n is learned in Keras (dense) and inverted 
 			if int(key[-1]) > 0:
 				last_name='sal_C_'+key
 				my_name='sal_B_far_'+key
@@ -209,7 +211,7 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict,stim
 				output_name='sal_C_'+key[:-1]+str(layer_n_minus_1) #conv1 => conv0
 				my_output=model_dict[output_name] 
 				shape_out=my_output.output.shape_in #back to FM_n-1 C units
-				W=arch_dict['sal_FB_'+str(layer_n)+str(layer_n+1)]['weights']
+				W=arch_dict['dense_sal_'+str(layer_n)+str(layer_n+1)]['weights']
 				FB_far_type=FB_dict[key]['FB_far_type']
 				k_FB_far=FB_dict[key]['k_FB_far']
 				model_dict[my_name] = nengo.Node(Sal_B_far(shape_in,shape_out,W,
@@ -242,7 +244,7 @@ def build_model(arch_dict,X_train,frac,pt,FB_dict,stim_dict):
 def get_error(sim,model,data,labels,probe_dict,n_images,pt):
 	
 	print 'Calculating error...'
-	y_predicted = sim.data[probe_dict['output']][::pt/0.001].ravel() #probe at end of pt
+	y_predicted = sim.data[probe_dict['output']][::pt/0.001].ravel().astype(int) #probe at end of pt
 	y_true = labels[:n_images]
 
 	results={}
@@ -369,35 +371,35 @@ def main():
 
 	X_train, y_train, X_test, y_test = load_mnist()
 	data=(X_test,y_test)
-	filename='mnist_CNN_v2_test' #mnist_CNN_v2_all_epochs=20
+	filename='mnist_CNN_v3_test3' #mnist_CNN_v2_all_epochs=20
 	arch_dict = import_keras_json(filename)
-	pt=0.005 #image presentation time, larger = more time for feedback
-	frac=0.1 #fraction of dataset to simulate
+	pt=0.001 #image presentation time, larger = more time for feedback
+	frac=0.01 #fraction of dataset to simulate
 
 	FB_dict={}
 	stim_dict={}
 	for key, info in arch_dict.items():
 		if key == 'conv0':
 			FB_dict[key] = {
-				'competition': 'softmax', #'none', 'softmax'
-				'FB_near_type': 'constant', #'none', 'constant'
+				'competition': 'none', #'none', 'softmax'
+				'FB_near_type': 'none', #'none', 'constant'
 				'tau_FB_near': 0.001,
-				'k_FB_near': 10,
+				'k_FB_near': 0,
 				'FB_far_type': 'none', #'none', 'dense_inverse'
 				'tau_FB_far': 0.001,
-				'k_FB_far': 1, 
+				'k_FB_far': 0, 
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
-			stim_dict[key][10] = 0
+			stim_dict[key][0] = 0
 		if key == 'conv1':
 			FB_dict[key] = {
 				'competition': 'none',
 				'FB_near_type': 'none',
 				'tau_FB_near': 0.001,
-				'k_FB_near': 5,
+				'k_FB_near': 0,
 				'FB_far_type': 'none',
 				'tau_FB_far': 0.001,
-				'k_FB_far': 1,
+				'k_FB_far': 0,
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
 			stim_dict[key][0] = 0

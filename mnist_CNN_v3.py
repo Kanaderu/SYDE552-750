@@ -29,18 +29,19 @@ from keras.optimizers import SGD, Adadelta, Adagrad
 from keras.utils import np_utils, generic_utils
 
 # Hyperparameters
-filename='mnist_CNN_v2_test'
+filename='mnist_CNN_v3_test3'
 batch_size = 128
 classes = 10
 learning_rate=0.01
 decay=1e-6
 momentum=0.9
 nesterov=True
-frac=0.0001
+frac=0.1
 epochs = 2
 
 # MNIST data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
+print (X_test.shape)
 img_x, img_y = 28,28
 X_train = X_train.reshape(X_train.shape[0], 1, img_x, img_y)
 X_test = X_test.reshape(X_test.shape[0], 1, img_x, img_y)
@@ -55,66 +56,79 @@ image_dim=(1,img_x,img_y)
 # Training parameters
 train_datapoints=samples_train
 test_datapoints=samples_test
+print (test_datapoints)
+print (X_test.shape)
 Y_train = np_utils.to_categorical(y_train, classes)
 Y_test = np_utils.to_categorical(y_test, classes)
 
+
+
+
+'''
+Network
+'''
 def get_outputs(model, input_name, layer_name, X_batch):
     get_outputs = theano.function([model.inputs[input_name].input],
     				model.nodes[layer_name].get_output(train=False), allow_input_downcast=True)
     my_outputs = get_outputs(X_batch)
     return my_outputs
 
-'''
-Network
-'''
 model = Graph()
+
 #input
 model.add_input(name='input', input_shape=image_dim)
 
 #1st conv layer
 FM1=8
-ker1=3
-pool1=2
+ker1=5
+pool1=3
 pad1=0 #no option for padding in convolution2d anyway
-stride1=1
-size1=int(np.floor((1+max(int(np.ceil((2*pad1+img_x-ker1)/float(stride1))),0))/pool1))
+stride1=2
 model.add_node(Convolution2D(FM1, ker1, ker1, subsample=(stride1, stride1),activation='relu'),
 							name='conv0', input='input')
 model.add_node(MaxPooling2D(pool_size=(pool1, pool1)),name='maxpool0', input='conv0')
 model.add_node(Dropout(0.5),name='drop0',input='maxpool0')
-model.add_node(AveragePooling2D(pool_size=(size1,size1)),name='sal_f0', input='maxpool0')
+
+#1st salience layer
+size1=get_outputs(model,'input','maxpool0',X_test[:test_datapoints]).shape[-1]
+model.add_node(AveragePooling2D(pool_size=(size1,size1)),name='sal_f0', input='drop0')
 model.add_node(Flatten(),name='flat_sal_f0', input='sal_f0')
+model.add_node(Flatten(),name='final_sal_f0', input='flat_sal_f0') #for symmetry
 
 #2nd conv layer
 FM2=16
 ker2=3
-pool2=2
+pool2=1
 pad2=0
 stride2=1
-size2=int(np.floor((1+max(int(np.ceil((2*pad2+size1-ker2)/float(stride2))),0))/pool2))
-model.add_node(Convolution2D(FM2, ker2, ker2, subsample=(stride2, stride2),activation='relu'),
+model.add_node(Convolution2D(FM2, ker2, ker2, subsample=(stride2, stride2), activation='relu'),
 							name='conv1', input='maxpool0')
-model.add_node(MaxPooling2D(pool_size=(pool2, pool2)),name='maxpool1', input='conv1')
-model.add_node(Dropout(0.5),name='drop1',input='maxpool1')
-model.add_node(AveragePooling2D(pool_size=(size2, size2)),name='sal_f1', input='maxpool1')
-model.add_node(Flatten(),name='flat_sal_f1', input='sal_f1')
+model.add_node(MaxPooling2D(pool_size=(pool2, pool2)), name='maxpool1', input='conv1')
+model.add_node(Dropout(0.5), name='drop1', input='maxpool1')
 
-#1st to 2nd layer Saliency connection
-model.add_node(Dense(FM2,activation='relu'),name='sal_FB_12',
-							inputs=['flat_sal_f0','flat_sal_f1'],merge_mode='sum')
+#2nd salience layer
+size2=get_outputs(model,'input','maxpool1',X_test[:test_datapoints]).shape[-1]
+model.add_node(AveragePooling2D(pool_size=(size2, size2)), name='sal_f1', input='drop1')
+model.add_node(Flatten(), name='flat_sal_f1', input='sal_f1')
+model.add_node(Dense(FM2, activation='relu'), name='dense_sal_12', input='final_sal_f0')
+model.add_node(Flatten(), name='final_sal_f1', inputs=['flat_sal_f1','dense_sal_12'], merge_mode='sum') #must be this order of inputs
+
 #flatten layer
-model.add_node(Flatten(),name='flatten', input='drop1')
-model.add_node(Flatten(),name='flat_sal_FB_12', input='sal_FB_12')
-#1st dense layer
-model.add_node(Dense(128, activation='relu'),name='dense0', input='flatten')
-model.add_node(Dense(FM2, activation='relu'),name='denseS0', input='flat_sal_FB_12')
-model.add_node(Dropout(0.5),name='drop2',input='dense0')
-model.add_node(Dropout(0.5),name='dropS2',input='denseS0')
-#2d dense layer
-model.add_node(Dense(classes, activation='softmax'),name='dense1', input='drop2')
-model.add_node(Dense(classes, activation='softmax'),name='denseS1', input='dropS2')
+model.add_node(Flatten(), name='flat_conv', input='drop1')
+model.add_node(Flatten(), name='flat_sal', input='final_sal_f1') #for symmetry
+
+#1st dense layer (fully connected)
+model.add_node(Dense(128, activation='relu'), name='dense_C0', input='flat_conv')
+model.add_node(Dense(128, activation='relu'), name='dense_S0', input='flat_sal')
+model.add_node(Dropout(0.5), name='drop_C0', input='dense_C0')
+model.add_node(Dropout(0.5), name='drop_S0', input='dense_S0')
+
+#2d dense layer (classification)
+model.add_node(Dense(classes, activation='softmax'), name='dense_C1', input='drop_C0')
+model.add_node(Dense(classes, activation='softmax'), name='dense_S1', input='drop_S0')
+
 # output
-model.add_output(name='output', inputs=['dense1','denseS1'],merge_mode='sum')
+model.add_output(name='output', inputs=['dense_C1','dense_S1'], merge_mode='sum')
 
 
 
@@ -127,27 +141,35 @@ history=model.fit({'input':X_train[:train_datapoints], 'output':Y_train[:train_d
 			batch_size=batch_size, nb_epoch=epochs, shuffle=True,
             validation_data={'input':X_test[:test_datapoints], 'output':Y_test[:test_datapoints]})
 
-#TODO automate this with model, weight information (gave up after 3 hrs and no Keras.usergroups response)
-#Note: skip adding dropout layers to this dictionary: treat them as though their inputs feed directly
-	#to inputs of the next population
+#TODO automate this with model, weight information (gave up after many hrs and no Keras.usergroups response)
 arch_dict=OrderedDict((
-	('input',			{'type':'input', 			'input_name':'image', 							'weights':None, 									'biases':None, 										'activation':None 																}),
-	('conv0', 			{'type':'Convolution2D', 	'input_name':'input', 							'weights':model.nodes['conv0'].get_weights()[0],	'biases':model.nodes['conv0'].get_weights()[1],		'activation':'relu', 	'stride':stride1, 										}),
-	('maxpool0', 		{'type':'MaxPooling2D', 	'input_name':'conv0', 							'weights':None, 									'biases':None,										'activation':None, 		'stride':1, 	'pool_type':'max', 	'pool_size': pool1	}),
-	('sal_f0', 			{'type':'AveragePooling2D', 'input_name':'maxpool0', 						'weights':None, 									'biases':None,										'activation':None, 		'stride':1, 	'pool_type':'avg', 	'pool_size': size1	}),
-	('flat_sal_f0',		{'type':'Flatten', 			'input_name':'sal_f0', 							'weights':None,										'biases':None,										'activation':None,  	'stride':1, 											}),
-	('conv1', 			{'type':'Convolution2D', 	'input_name':'maxpool0', 						'weights':model.nodes['conv1'].get_weights()[0], 	'biases':model.nodes['conv1'].get_weights()[1], 	'activation':'relu', 	'stride':stride2, 										}),
-	('maxpool1',		{'type':'MaxPooling2D', 	'input_name':'conv1', 							'weights':None,										'biases':None,										'activation':None, 		'stride':1, 	'pool_type':'max', 	'pool_size': pool2	}),
-	('sal_f1', 			{'type':'AveragePooling2D', 'input_name':'maxpool1', 						'weights':None, 									'biases':None,										'activation':None, 		'stride':1, 	'pool_type':'avg', 	'pool_size': size2	}),
-	('flat_sal_f1', 	{'type':'Flatten', 			'input_name':'sal_f1', 							'weights':None,										'biases':None,										'activation':None,  	'stride':1, 											}),
-	('sal_FB_12', 		{'type':'DenseFB', 			'input_name':['flat_sal_f0','flat_sal_f1'], 	'weights':model.nodes['sal_FB_12'].get_weights()[0],'biases':model.nodes['sal_FB_12'].get_weights()[1],	'activation':'relu',	'stride':1, 											}),
-	('flatten', 		{'type':'Flatten', 			'input_name':'maxpool1', 						'weights':None,										'biases':None,										'activation':None, 		'stride':1, 											}),
-	('flat_sal_FB_12', 	{'type':'Flatten', 			'input_name':'sal_FB_12',						'weights':None,										'biases':None,										'activation':None,  	'stride':1, 											}),
-	('dense0', 			{'type':'Dense', 			'input_name':'flatten', 						'weights':model.nodes['dense0'].get_weights()[0], 	'biases':model.nodes['dense0'].get_weights()[1],	'activation':'relu',	'stride':1,												}),
-	('denseS0', 		{'type':'Dense', 			'input_name':'flat_sal_FB_12', 					'weights':model.nodes['denseS0'].get_weights()[0], 	'biases':model.nodes['denseS0'].get_weights()[1],	'activation':'relu',	'stride':1, 											}),
-	('dense1', 			{'type':'Dense', 			'input_name':'dense0', 							'weights':model.nodes['dense1'].get_weights()[0],	'biases':model.nodes['dense1'].get_weights()[1], 	'activation':'softmax', 'stride':1, 											}),
-	('denseS1', 		{'type':'Dense', 			'input_name':'denseS0', 						'weights':model.nodes['denseS1'].get_weights()[0],	'biases':model.nodes['denseS1'].get_weights()[1], 	'activation':'softmax', 'stride':1, 											}),
-	('output', 			{'type':'output', 			'input_name':['dense1','denseS1'], 				'weights':None, 									'biases':None, 										'activation':None 																}),
+	('input',			{'type':'input', 			'input_name':'image', 							'weights':None, 										'biases':None, 											'activation':None 																}),
+
+	('conv0', 			{'type':'Convolution2D', 	'input_name':'input', 							'weights':model.nodes['conv0'].get_weights()[0],		'biases':model.nodes['conv0'].get_weights()[1],			'activation':'relu', 	'stride':stride1, 										}),
+	('maxpool0', 		{'type':'MaxPooling2D', 	'input_name':'conv0', 							'weights':None, 										'biases':None,											'activation':None, 		'stride':1, 	'pool_type':'max', 	'pool_size': pool1	}),
+	('drop0',			{'type':'Dropout', 			'input_name':'maxpool0', 						'weights':None,											'biases':None,											'activation':None,  				 											}),
+
+	('sal_f0', 			{'type':'AveragePooling2D', 'input_name':'drop0', 							'weights':None, 										'biases':None,											'activation':None, 		'stride':1, 	'pool_type':'avg', 	'pool_size': size1	}),
+	('flat_sal_f0',		{'type':'Flatten', 			'input_name':'sal_f0', 							'weights':None,											'biases':None,											'activation':None,  															}),
+	('final_sal_f0',	{'type':'Flatten', 			'input_name':'flat_sal_f0', 					'weights':None,											'biases':None,											'activation':None,  	 														}),
+
+	('conv1', 			{'type':'Convolution2D', 	'input_name':'drop0', 							'weights':model.nodes['conv1'].get_weights()[0], 		'biases':model.nodes['conv1'].get_weights()[1], 		'activation':'relu', 	'stride':stride2, 										}),
+	('maxpool1',		{'type':'MaxPooling2D', 	'input_name':'conv1', 							'weights':None,											'biases':None,											'activation':None, 		'stride':1, 	'pool_type':'max', 	'pool_size': pool2	}),
+	('drop1',			{'type':'Dropout', 			'input_name':'maxpool1', 						'weights':None,											'biases':None,											'activation':None,  				 											}),
+
+	('sal_f1', 			{'type':'AveragePooling2D', 'input_name':'drop1', 							'weights':None, 										'biases':None,											'activation':None, 		'stride':1, 	'pool_type':'avg', 	'pool_size': size2	}),
+	('flat_sal_f1', 	{'type':'Flatten', 			'input_name':'sal_f1', 							'weights':None,											'biases':None,											'activation':None,  				 											}),
+	('dense_sal_12', 	{'type':'Dense', 			'input_name':'final_sal_f0', 					'weights':model.nodes['dense_sal_12'].get_weights()[0], 'biases':model.nodes['dense_sal_12'].get_weights()[1],	'activation':'relu',															}),
+	('final_sal_f1', 	{'type':'Flatten_Merge', 	'input_name':['flat_sal_f1','dense_sal_12'], 	'weights':None,											'biases':None,											'activation':'relu',	 														}),
+
+	('flat_conv', 		{'type':'Flatten', 			'input_name':'drop1', 							'weights':None,											'biases':None,											'activation':None, 		 														}),
+	('flat_sal', 		{'type':'Flatten', 			'input_name':'final_sal_f1',					'weights':None,											'biases':None,											'activation':None,  				 											}),
+	('dense_C0', 		{'type':'Dense', 			'input_name':'flat_conv', 						'weights':model.nodes['dense_C0'].get_weights()[0], 	'biases':model.nodes['dense_C0'].get_weights()[1],		'activation':'relu',															}),
+	('dense_S0', 		{'type':'Dense', 			'input_name':'flat_sal', 						'weights':model.nodes['dense_S0'].get_weights()[0], 	'biases':model.nodes['dense_S0'].get_weights()[1],		'activation':'relu',															}),
+	('dense_C1', 		{'type':'Dense', 			'input_name':'dense_C0', 						'weights':model.nodes['dense_C1'].get_weights()[0],		'biases':model.nodes['dense_C1'].get_weights()[1], 		'activation':'softmax', 														}),
+	('dense_S1', 		{'type':'Dense', 			'input_name':'dense_S0', 						'weights':model.nodes['dense_S1'].get_weights()[0],		'biases':model.nodes['dense_S1'].get_weights()[1], 		'activation':'softmax', 														}),
+
+	('output', 			{'type':'output', 			'input_name':['dense_C1','dense_S1'], 			'weights':None, 										'biases':None, 											'activation':None 																}),
 ))
 
 
@@ -251,17 +273,17 @@ output_stuff(model, history)
 conv_nodes, avg_pool_nodes, max_pool_nodes = get_activities(model)
 output_stats(filename,conv_nodes, avg_pool_nodes, max_pool_nodes)
 
-output1 = get_outputs(model,'input','dense1',X_train[:train_datapoints])
-output2 = get_outputs(model,'input','denseS1',X_train[:train_datapoints])
+output1 = get_outputs(model,'input','dense_C1',X_train[:train_datapoints])
+output2 = get_outputs(model,'input','dense_S1',X_train[:train_datapoints])
 guesses = np.argmax(output1+output2, axis=1)
 answers = y_train[:train_datapoints]
 error_rate=np.count_nonzero(guesses != answers)/float(len(answers))
 print ('total error rate',error_rate)
 # print (model.nodes['conv0'].get_weights()[0].shape)
-# print (model.nodes['conv1'].get_weights()[0].shape)
-# print (get_outputs(model,'input','conv0',X_test[:test_datapoints]).shape)
-# print (get_outputs(model,'input','conv1',X_test[:test_datapoints]).shape)
-# print (get_outputs(model,'input','maxpool0',X_test[:test_datapoints]).shape)
-# print (get_outputs(model,'input','maxpool1',X_test[:test_datapoints]).shape)
+# print (model.nodes['dense_C0'].get_weights()[0].shape)
+# print (get_outputs(model,'input','sal_f0',X_test[:test_datapoints]).shape)
+# print (get_outputs(model,'input','drop0',X_test[:test_datapoints]).shape)
+# print (get_outputs(model,'input','sal_f1',X_test[:test_datapoints]).shape)
+# print (get_outputs(model,'input','drop0',X_test[:test_datapoints]).shape)
 # print (model.nodes['drop0'].get_config())
 # print ([get_outputs(model,'input',the_node,X_test[:test_datapoints]).shape for the_node in model.nodes])
