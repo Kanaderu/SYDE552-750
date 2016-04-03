@@ -29,13 +29,11 @@ def load_mnist():
 	X_test /= 255
 	return X_train, y_train, X_test, y_test
 
-def load_lines(datafile,labelfile):
+def load_lines(datafile,labelfile,split=0.8):
 
-	data=np.load(datafile)
-	labels=np.load(labelfile)
-
-	split=0.8
-	samples_train=int(split*len(data))
+	data=np.load(datafile)['arr_0']
+	labels=np.load(labelfile)['arr_0']
+	samples_train=int(split*data.shape[0])
 	samples_test=len(data)-samples_train
 	image_dim=(1,data[0].shape[0],data[0].shape[1])
 
@@ -53,8 +51,8 @@ def load_lines(datafile,labelfile):
 
 def load_crosses(crossesfile):
 	
-	data=np.load(crossesfile)
-	samples_train=len(data)
+	data=np.load(crossesfile)['arr_0']
+	samples_train=data.shape[0]
 	image_dim=(1,data[0].shape[0],data[0].shape[1])
 	X_train=data[:samples_train]
 	X_train = X_train.reshape(samples_train,image_dim[0],image_dim[1],image_dim[2])
@@ -337,6 +335,37 @@ def plot_saliences(layer,image,sim,model_dict,probe_dict,pt):
 	legend=ax.legend(loc='best',shadow=True)
 	plt.show()
 
+def plot_avg_salience(layer,data,sim,model_dict,probe_dict,pt):
+
+	print 'Plotting Average Feature Activations...'
+	sal_vs_time=[] #(FM_activities,timesteps)
+	data=sim.data[probe_dict[layer]] #(images*pt/dt,FMs)
+	FMs=data.shape[1]
+	timesteps=pt/0.001
+	images=data.shape[0]/timesteps
+	indices=np.arange(0,FMs,1)
+	activations=data.reshape((images, timesteps, FMs))
+	normed_activations=np.zeros((activations.shape))
+	for im in range(normed_activations.shape[0]):
+		for t in range(normed_activations.shape[1]):
+			norm=np.sum(activations[im][t])
+			for fm in range(normed_activations.shape[2]):
+				normed_activations[im][t][fm] = activations[im][t][fm]/norm
+	A_avg_images=np.average(normed_activations,axis=0)
+	A_std_images=np.std(normed_activations,axis=0)
+
+	#image #, before and after feedback
+	fig=plt.figure(figsize=(16,8))
+	ax=fig.add_subplot(111)
+	ax.bar(indices, A_avg_images[0], yerr=A_std_images[0], width=1, label='t=0.0', alpha=0.5, color='b')
+	ax.bar(indices, A_avg_images[-1], yerr=A_std_images[-1], width=1, label='t=%s' %timesteps, alpha=0.5, color='g')
+	ax.set_xlabel('Feature #')
+	ax.set_ylabel('Mean Activation')
+	ax.set_xlim(0,FMs)
+	ax.set_title('Layer %s' %layer)
+	legend=ax.legend(loc='best',shadow=True)
+	plt.show()
+
 def plot_outputs(image,sim,model_dict,probe_dict,pt):
 
 	print 'Plotting Class Activations...'
@@ -366,9 +395,9 @@ def plot_outputs(image,sim,model_dict,probe_dict,pt):
 	legend=ax.legend(loc='best',shadow=True)
 	plt.show()
 
-def plot_image(image,layer,data,sim,arch_dict,model_dict,probe_dict,pt,n_images):
+def plot_image(image,layer,FM_number,data,sim,arch_dict,model_dict,probe_dict,pt,n_images):
 
-	print 'Printing image...'
+	print 'Displaying image...'
 	img=data[image][0] #expects training data as 4D tuple (images, channels, img_x, img_y)
 	weights=arch_dict['conv%s' %layer]['weights'] #expects 4D tuple (FMs, channels, ker_x, ker_y)
 	layer_size=model_dict['conv%s' %layer].output.shape_in
@@ -377,35 +406,31 @@ def plot_image(image,layer,data,sim,arch_dict,model_dict,probe_dict,pt,n_images)
 	probe_start=sim.data[probe_dict['conv%s' %layer]][image*pt/0.001].reshape(layer_size)
 	probe_end=sim.data[probe_dict['conv%s' %layer]][(image+1)*pt/0.001-1].reshape(layer_size)
 	probe_sal_end=sim.data[probe_dict['sal_F_conv%s' %layer]][(image+1)*pt/0.001-1]
-	FM_max=np.argmax(probe_sal_end)
 	# sum the FMs, which are already weighed through feedback, to reconstruct the image
 	redraw_start=np.average(probe_start,axis=0)
 	redraw_end=np.average(probe_end,axis=0)
 	# print probe_start[10], probe_end[10], redraw_start, redraw_end
 
-	fig=plt.figure(figsize=(16,8))
-	ax=fig.add_subplot(131)
-	ax.imshow(weights[FM_max][0], cmap='gray',interpolation='none')
-	ax.set_title('kernel %s' %FM_max)
-	ax=fig.add_subplot(132)
-	ax.imshow(probe_start[FM_max], cmap='gray', vmin=0,interpolation='none')
-	ax.set_title('FM %s activation' %FM_max)
-	ax=fig.add_subplot(133)
-	ax.imshow(probe_end[FM_max], cmap='gray', vmin=0,interpolation='none')
-	ax.set_title('FM %s activation end' %FM_max)
-	plt.show()
+	fig=plt.figure(figsize=(18,12))
+	ax=fig.add_subplot(231)
+	ax.imshow(weights[FM_number][0], cmap='gray', interpolation='none')
+	ax.set_title('Kernel %s' %FM_number)
+	ax=fig.add_subplot(232)
+	ax.imshow(probe_start[FM_number], cmap='gray', vmin=0, interpolation='none')
+	ax.set_title('FM %s Act Begin' %FM_number)
+	ax=fig.add_subplot(233)
+	ax.imshow(probe_end[FM_number], cmap='gray', vmin=0, interpolation='none')
+	ax.set_title('FM %s Act End' %FM_number)
 
-	fig=plt.figure(figsize=(16,8))
-	ax=fig.add_subplot(131)
-	ax.imshow(img, cmap='gray',interpolation='none')
-	ax.set_title('original image')
-	ax=fig.add_subplot(132)
-	ax.imshow(redraw_start, cmap='gray', vmin=0,interpolation='none')
-	ax.set_title('sum of FMs, start of pt')
-	ax=fig.add_subplot(133)
-	ax.imshow(redraw_end, cmap='gray', vmin=0,interpolation='none')
-	ax.set_title('sum of FMs, end of pt')
-	plt.tight_layout()
+	ax=fig.add_subplot(234)
+	ax.imshow(img, cmap='gray', interpolation='none')
+	ax.set_title('Image')
+	ax=fig.add_subplot(235)
+	ax.imshow(redraw_start, cmap='gray', vmin=0, interpolation='none')
+	ax.set_title('Sum of FM Acts Begin')
+	ax=fig.add_subplot(236)
+	ax.imshow(redraw_end, cmap='gray', vmin=0, interpolation='none')
+	ax.set_title('Sum of FM Acts End')
 	plt.show()
 
 def make_FB_stim_dict(arch_dict):
@@ -417,7 +442,7 @@ def make_FB_stim_dict(arch_dict):
 				'competition': 'softmax', #'none', 'softmax'
 				'FB_near_type': 'constant', #'none', 'constant'
 				'tau_FB_near': 0.001,
-				'k_FB_near': 0.1,
+				'k_FB_near': 3,
 				'FB_far_type': 'none', #'none', 'dense_inverse'
 				'tau_FB_far': 0.001,
 				'k_FB_far': 0, 
@@ -426,25 +451,25 @@ def make_FB_stim_dict(arch_dict):
 			stim_dict[key][0] = 0
 		if key == 'conv1':
 			FB_dict[key] = {
-				'competition': 'none',
-				'FB_near_type': 'none',
+				'competition': 'softmax',
+				'FB_near_type': 'constant',
 				'tau_FB_near': 0.001,
-				'k_FB_near': 0,
-				'FB_far_type': 'none',
+				'k_FB_near': 3,
+				'FB_far_type': 'dense_inverse',
 				'tau_FB_far': 0.001,
-				'k_FB_far': 1,
+				'k_FB_far': 5,
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
 			stim_dict[key][0] = 0
 		if key == 'conv2':
 			FB_dict[key] = {
-				'competition': 'none',
+				'competition': 'softmax',
 				'FB_near_type': 'none',
 				'tau_FB_near': 0.001,
 				'k_FB_near': 10,
-				'FB_far_type': 'none',
+				'FB_far_type': 'dense_inverse',
 				'tau_FB_far': 0.001,
-				'k_FB_far': 1,
+				'k_FB_far': 5,
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
 			stim_dict[key][0] = 0
@@ -453,18 +478,17 @@ def make_FB_stim_dict(arch_dict):
 def main():
 
 	# X_train, y_train, X_test, y_test = load_mnist()
-	datafile='lines_data_50000.npy'
-	labelfile='lines_labels_50000.npy'
-	crossesfile='crosses_data.npy'
+	datafile='lines_data_50000.npz'
+	labelfile='lines_labels_50000.npz'
+	datafile='+_data.npz'
+	labelfile='+_labels.npz'
 
-	crosses=load_crosses(crossesfile)
-	# data=(crosses,0)
-	X_train, y_train, X_test, y_test = load_lines(datafile,labelfile)
+	X_train, y_train, X_test, y_test = load_lines(datafile,labelfile,split=0.8)
 	data=(X_test,y_test)
 
 	archfile='mnist_CNN_v5_50000'
 	arch_dict = import_keras_json(archfile)
-	pt=0.001 #image presentation time, larger = more time for feedback
+	pt=0.003 #image presentation time, larger = more time for feedback
 	frac=0.1 #fraction of dataset to simulate
 
 	FB_dict, stim_dict = make_FB_stim_dict(arch_dict)
@@ -481,10 +505,16 @@ def main():
 		print key, '...', item
 
 	image_num=0
-	layer=2
-	plot_saliences('sal_F_conv0',image_num,sim,model_dict,probe_dict,pt)
-	plot_outputs(image_num,sim,model_dict,probe_dict,pt)
-	plot_image(image_num,layer,data[0],sim,arch_dict,model_dict,probe_dict,pt,n_images)
+	layer=0
+	FM_number=0
+	plot_saliences('sal_F_conv1',image_num,sim,model_dict,probe_dict,pt)
+	# plot_saliences('sal_F_conv1',image_num,sim,model_dict,probe_dict,pt)
+	# plot_saliences('sal_F_conv2',image_num,sim,model_dict,probe_dict,pt)
+	# plot_avg_salience('sal_F_conv0',data[0],sim,model_dict,probe_dict,pt)
+	# plot_avg_salience('sal_F_conv1',data[0],sim,model_dict,probe_dict,pt)
+	# plot_avg_salience('sal_F_conv2',data[0],sim,model_dict,probe_dict,pt)
+	# plot_outputs(image_num,sim,model_dict,probe_dict,pt)
+	plot_image(image_num,FM_number,layer,data[0],sim,arch_dict,model_dict,probe_dict,pt,n_images)
 
 
 main()

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 pixels_x=64
 pixels_y=64
-N=50000
+N=1000
 images=[]
 labels=[]
 
@@ -24,11 +24,11 @@ noise_sigma=0.05
 
 
 for n in range(N):
-	if np.mod(n,100)==0:
-		print '%s/%s images generated' %(n,N)
+	if np.mod(n,100)==0: print '%s/%s images generated' %(n,N)
 	img=np.zeros((pixels_x, pixels_y))
-	label=np.random.random_integers(low=0,high=2) #0=horizontal, 1=vertical, 2=diagonal
-	#make the spanning vertical or horizontal lines
+	#0=(-), 1=(|), 2=(\), 3=(x), 4=(+)
+	label=np.random.random_integers(low=4,high=4)
+
 	center=np.random.uniform(low=0,high=pixels_x)
 	width=np.random.normal(loc=width_mean,scale=width_sigma)
 	loc_min=np.floor(max(center-width/2,0))
@@ -36,13 +36,29 @@ for n in range(N):
 	line_r=[loc_min,loc_max] #row
 	line_c=[loc_min,loc_max] #column
 	line_i=np.random.normal(loc=intensity_mean,scale=intensity_sigma) #pixel intensity
+
 	for i in range(pixels_x):
 		for j in range(pixels_y):
-			if label == 0 and j>=np.min(line_r) and j <= np.max(line_r):
+			#horizontal line
+			# if label == 0 and j>=np.min(line_r) and j <= np.max(line_r):
+			# 	img[j][i]=line_i
+
+			# vertical line
+			# if label == 1 and i>=np.min(line_c) and i <= np.max(line_c):
+			# 	img[j][i]=line_i
+
+			#diagonal line
+			# if label == 2 and i==j:
+			# 	img[j][i]=line_i				
+
+			#x marks the spot
+			# if (label == 2 and i==j): # or (label == -1 and i==pixels_x-j) #gives X shape
+			# 	img[j][i]=line_i
+
+			#cross
+			if j>=np.min(line_r) and j <= np.max(line_r):
 				img[j][i]=line_i
-			if label == 1 and i>=np.min(line_c) and i <= np.max(line_c):
-				img[j][i]=line_i
-			if (label == 2 and i==j): # or (label == -1 and i==pixels_x-j) #gives X shape
+			if i>=np.min(line_c) and i <= np.max(line_c):
 				img[j][i]=line_i
 
 	#apply cropping (changes imagesize = bad)
@@ -64,5 +80,5 @@ for n in range(N):
 	# plt.imshow(img, cmap='gray',vmin=0, vmax=1)
 	# plt.show()
 
-np.save('lines_data',np.array(images))
-np.save('lines_labels',np.array(labels))
+np.savez_compressed('+_data',np.array(images))
+np.savez_compressed('+_labels',np.array(labels))
