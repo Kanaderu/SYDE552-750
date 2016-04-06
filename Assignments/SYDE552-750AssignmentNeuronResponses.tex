@@ -1,0 +1,761 @@
+
+% Default to the notebook output style
+
+    
+
+
+% Inherit from the specified cell style.
+
+
+
+
+    
+\documentclass{article}
+
+    
+    
+    \usepackage{graphicx} % Used to insert images
+    \usepackage{adjustbox} % Used to constrain images to a maximum size 
+    \usepackage{color} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage{eurosym} % defines \euro
+    \usepackage[mathletters]{ucs} % Extended unicode (utf-8) support
+    \usepackage[utf8x]{inputenc} % Allow utf-8 characters in the tex document
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics 
+                         % to support a larger range 
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    \usepackage{booktabs}  % table support for pandoc > 1.12.2
+    \usepackage{ulem} % ulem is needed to support strikethroughs (\sout)
+    
+
+    
+    
+    \definecolor{orange}{cmyk}{0,0.4,0.8,0.2}
+    \definecolor{darkorange}{rgb}{.71,0.21,0.01}
+    \definecolor{darkgreen}{rgb}{.12,.54,.11}
+    \definecolor{myteal}{rgb}{.26, .44, .56}
+    \definecolor{gray}{gray}{0.45}
+    \definecolor{lightgray}{gray}{.95}
+    \definecolor{mediumgray}{gray}{.8}
+    \definecolor{inputbackground}{rgb}{.95, .95, .85}
+    \definecolor{outputbackground}{rgb}{.95, .95, .95}
+    \definecolor{traceback}{rgb}{1, .95, .95}
+    % ansi colors
+    \definecolor{red}{rgb}{.6,0,0}
+    \definecolor{green}{rgb}{0,.65,0}
+    \definecolor{brown}{rgb}{0.6,0.6,0}
+    \definecolor{blue}{rgb}{0,.145,.698}
+    \definecolor{purple}{rgb}{.698,.145,.698}
+    \definecolor{cyan}{rgb}{0,.698,.698}
+    \definecolor{lightgray}{gray}{0.5}
+    
+    % bright ansi colors
+    \definecolor{darkgray}{gray}{0.25}
+    \definecolor{lightred}{rgb}{1.0,0.39,0.28}
+    \definecolor{lightgreen}{rgb}{0.48,0.99,0.0}
+    \definecolor{lightblue}{rgb}{0.53,0.81,0.92}
+    \definecolor{lightpurple}{rgb}{0.87,0.63,0.87}
+    \definecolor{lightcyan}{rgb}{0.5,1.0,0.83}
+    
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+    
+    % Additional commands for more recent versions of Pandoc
+    \newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{{#1}}}
+    \newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{{#1}}}
+    \newcommand{\ImportTok}[1]{{#1}}
+    \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{{#1}}}}
+    \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{{#1}}}
+    \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{{#1}}}
+    \newcommand{\BuiltInTok}[1]{{#1}}
+    \newcommand{\ExtensionTok}[1]{{#1}}
+    \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{{#1}}}
+    \newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{{#1}}}
+    \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    
+    
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatability definitions
+    \def\gt{>}
+    \def\lt{<}
+    % Document parameters
+    \title{SYDE552-750AssignmentNeuronResponses}
+    
+    
+    
+
+    % Pygments definitions
+    
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\expandafter\def\csname PY@tok@gd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gu\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\expandafter\def\csname PY@tok@gs\endcsname{\let\PY@bf=\textbf}
+\expandafter\def\csname PY@tok@gr\endcsname{\def\PY@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@cm\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@vg\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@m\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@go\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.53,0.53}{##1}}}
+\expandafter\def\csname PY@tok@ge\endcsname{\let\PY@it=\textit}
+\expandafter\def\csname PY@tok@vc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@il\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@cs\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.74,0.48,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gh\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@ni\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.60,0.60,0.60}{##1}}}
+\expandafter\def\csname PY@tok@nl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@no\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@na\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.49,0.56,0.16}{##1}}}
+\expandafter\def\csname PY@tok@nb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@ne\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.82,0.25,0.23}{##1}}}
+\expandafter\def\csname PY@tok@nf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@si\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@s2\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@vi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@nt\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nv\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@s1\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@kd\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@sh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sx\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@bp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c1\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@kc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@mf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@err\endcsname{\def\PY@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
+\expandafter\def\csname PY@tok@mb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ss\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sr\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@mo\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@mi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@gp\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@o\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kr\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@s\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@kp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@w\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\expandafter\def\csname PY@tok@kt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\expandafter\def\csname PY@tok@ow\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@sb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@k\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@se\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sd\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % Exact colors from NB
+    \definecolor{incolor}{rgb}{0.0, 0.0, 0.5}
+    \definecolor{outcolor}{rgb}{0.545, 0.0, 0.0}
+
+
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy 
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=blue,
+      linkcolor=darkorange,
+      citecolor=darkgreen,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+    \begin{document}
+    
+    
+    \maketitle
+    
+    
+
+    
+    \section{Peter Duggins}\label{peter-duggins}
+
+\section{SYDE 552/750}\label{syde-552750}
+
+\section{Assignment: Neuron
+Responses}\label{assignment-neuron-responses}
+
+\section{March 15, 2016}\label{march-15-2016}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}32}]:} \PY{o}{\PYZpc{}}\PY{k}{pylab} inline
+         \PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k+kn}{as} \PY{n+nn}{np}
+         \PY{k+kn}{from} \PY{n+nn}{scipy} \PY{k+kn}{import} \PY{n}{ndimage}
+         \PY{k+kn}{import} \PY{n+nn}{scipy.signal}
+         \PY{k+kn}{import} \PY{n+nn}{scipy.integrate}
+         \PY{k+kn}{import} \PY{n+nn}{pickle}
+         \PY{k+kn}{import} \PY{n+nn}{matplotlib.pyplot} \PY{k+kn}{as} \PY{n+nn}{plt}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{rcParams}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{lines.linewidth}\PY{l+s}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{4}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{rcParams}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{font.size}\PY{l+s}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{20}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Populating the interactive namespace from numpy and matplotlib
+    \end{Verbatim}
+
+    \subsection{1. Tuning Curves}\label{tuning-curves}
+
+    Load the synthetic data file MT-direction-tuning. The file contains two
+variables: ``direction'' is a list of stimulus directions for 200
+trials. ``spikeTimes'' contains spike times for each trial.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}33}]:} \PY{k}{def} \PY{n+nf}{load\PYZus{}data\PYZus{}one}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{tuning\PYZus{}data}\PY{o}{=}\PY{n}{pickle}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n+nb}{open}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{MT\PYZhy{}direction\PYZhy{}tuning.pkl}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{rb}\PY{l+s}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{directions}\PY{o}{=}\PY{n}{tuning\PYZus{}data}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{direction}\PY{l+s}{\PYZsq{}}\PY{p}{]}
+         	\PY{n}{spikeTimes}\PY{o}{=}\PY{n}{tuning\PYZus{}data}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{spikeTimes}\PY{l+s}{\PYZsq{}}\PY{p}{]}
+         	\PY{k}{return} \PY{n}{directions}\PY{p}{,}\PY{n}{spikeTimes}
+\end{Verbatim}
+
+    Plot the spike raster and the multi-trial firing rate (5ms bins) for
+0-degree trials. Trial length is 2s.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}34}]:} \PY{k}{def} \PY{n+nf}{one\PYZus{}b}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{c}{\PYZsh{}Load the synthetic data file MT\PYZhy{}tuning\PYZhy{}direction}
+         	\PY{n}{directions}\PY{p}{,}\PY{n}{spikeTimes}\PY{o}{=}\PY{n}{load\PYZus{}data\PYZus{}one}\PY{p}{(}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Get the indices of the trials with 0 degree stimulus direction}
+         	\PY{n}{zero\PYZus{}degree\PYZus{}indices}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{directions}\PY{o}{==}\PY{l+m+mi}{0}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Get the spike timing data from those trials}
+         	\PY{n}{ugly\PYZus{}arrays}\PY{o}{=}\PY{n}{spikeTimes}\PY{p}{[}\PY{n}{zero\PYZus{}degree\PYZus{}indices}\PY{p}{]}
+         	\PY{n}{zero\PYZus{}degree\PYZus{}spike\PYZus{}trials}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{n}{ugly\PYZus{}arrays}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}
+         		\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{ugly\PYZus{}arrays}\PY{p}{)}\PY{p}{)}\PY{p}{]}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Calculate the \PYZsq{}multi\PYZhy{}trial\PYZsq{} (or \PYZsq{}time\PYZhy{}varying\PYZsq{}) firing rate}
+         	\PY{c}{\PYZsh{}by counting the number of spikes in a small time window,}
+             \PY{c}{\PYZsh{}dividing by the bin size, and averaging accross all trials}
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mf}{2.0} \PY{c}{\PYZsh{}seconds}
+         	\PY{n}{bin\PYZus{}width}\PY{o}{=}\PY{l+m+mf}{0.005}
+         	\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{int}\PY{p}{(}\PY{n}{T}\PY{o}{/}\PY{n}{bin\PYZus{}width}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+         		\PY{n}{bin\PYZus{}i}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         		\PY{k}{for} \PY{n}{trial} \PY{o+ow}{in} \PY{n}{zero\PYZus{}degree\PYZus{}spike\PYZus{}trials}\PY{p}{:}        
+         			\PY{n}{count}\PY{o}{=}\PY{l+m+mi}{0}
+         			\PY{k}{for} \PY{n}{t} \PY{o+ow}{in} \PY{n}{trial}\PY{p}{:}
+         				\PY{k}{if} \PY{p}{(}\PY{n}{i}\PY{o}{*}\PY{n}{bin\PYZus{}width}\PY{o}{\PYZlt{}}\PY{o}{=}\PY{n}{t}\PY{o}{\PYZlt{}}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{o}{*}\PY{n}{bin\PYZus{}width}\PY{p}{)}\PY{p}{:}
+         					\PY{n}{count}\PY{o}{+}\PY{o}{=}\PY{l+m+mf}{1.0}
+         			\PY{n}{bin\PYZus{}i}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{count}\PY{o}{/}\PY{n}{bin\PYZus{}width}\PY{p}{)}
+         		\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{bin\PYZus{}i}\PY{p}{)}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}plot spike raster and multitrial firing rate}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{16}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{211}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{eventplot}\PY{p}{(}\PY{n}{zero\PYZus{}degree\PYZus{}spike\PYZus{}trials}\PY{p}{,}\PY{n}{colors}\PY{o}{=}\PY{p}{[}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{]}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlim}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{neuron}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{212}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{bar}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{bin\PYZus{}width}\PY{p}{)}\PY{p}{,}\PY{n}{multitrial\PYZus{}binned\PYZus{}rate}\PY{p}{,}\PY{n}{width}\PY{o}{=}\PY{n}{bin\PYZus{}width}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlim}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{)}
+         \PY{c}{\PYZsh{} 	ax.set\PYZus{}ylim(0,120)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{multi\PYZhy{}trial binned spike rate}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+             
+         \PY{n}{one\PYZus{}b}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentNeuronResponses_files/SYDE552-750AssignmentNeuronResponses_6_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    Plot together the single-trial rates estimate for trial 9 using a
+Gaussian kernel with $SD=5$ms and $SD=50$ms. Use an appropriate sampling
+period so that rate fluctuations are not visibly distorted in the plot.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}35}]:} \PY{k}{def} \PY{n+nf}{one\PYZus{}c}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{c}{\PYZsh{}Load the synthetic data file MT\PYZhy{}tuning\PYZhy{}direction}
+         	\PY{n}{directions}\PY{p}{,}\PY{n}{spikeTimes}\PY{o}{=}\PY{n}{load\PYZus{}data\PYZus{}one}\PY{p}{(}\PY{p}{)}
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mf}{2.0} \PY{c}{\PYZsh{}seconds}
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.005}
+         	\PY{n}{t}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{)}
+         	\PY{n}{Nt}\PY{o}{=}\PY{n+nb}{len}\PY{p}{(}\PY{n}{t}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Get the data from trial 9}
+         	\PY{n}{trial9\PYZus{}spikes}\PY{o}{=}\PY{n}{spikeTimes}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{8}\PY{p}{]}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Create an array that has 1s at the spike times and zeros elsewhere}
+         	\PY{n}{trial9\PYZus{}raster}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{Nt}\PY{p}{)}\PY{p}{)}
+         	\PY{k}{for} \PY{n}{spike} \PY{o+ow}{in} \PY{n}{trial9\PYZus{}spikes}\PY{p}{:}
+         		\PY{n}{trial9\PYZus{}raster}\PY{p}{[}\PY{n}{spike}\PY{o}{/}\PY{n}{dt}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{1}
+         
+         	\PY{c}{\PYZsh{}Define the smoothing Gaussian kernels}
+         	\PY{n}{sigma1}\PY{o}{=}\PY{l+m+mf}{0.005}
+         	\PY{n}{sigma2}\PY{o}{=}\PY{l+m+mf}{0.05}
+         	\PY{n}{G1} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{p}{(}\PY{n}{t}\PY{o}{\PYZhy{}}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{t}\PY{p}{)}\PY{p}{)}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{o}{/}\PY{p}{(}\PY{l+m+mi}{2}\PY{o}{*}\PY{n}{sigma1}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}     
+         	\PY{n}{G1} \PY{o}{=} \PY{n}{G1} \PY{o}{/} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{G1}\PY{p}{)}  \PY{c}{\PYZsh{}normalize}
+         	\PY{n}{G2} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{p}{(}\PY{n}{t}\PY{o}{\PYZhy{}}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{t}\PY{p}{)}\PY{p}{)}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{o}{/}\PY{p}{(}\PY{l+m+mi}{2}\PY{o}{*}\PY{n}{sigma2}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}     
+         	\PY{n}{G2} \PY{o}{=} \PY{n}{G2} \PY{o}{/} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{G2}\PY{p}{)}  \PY{c}{\PYZsh{}normalize}
+             
+         	\PY{c}{\PYZsh{}You can also get the firing rate, then use the gaussian filter}
+         	\PY{c}{\PYZsh{}package in scipy to get the same result.}
+         	\PY{c}{\PYZsh{}Calculate the \PYZsq{}multi\PYZhy{}trial\PYZsq{} (or \PYZsq{}time\PYZhy{}varying\PYZsq{}) firing rate}
+         	\PY{c}{\PYZsh{}by counting the number of spikes in a small time window,}
+         	\PY{c}{\PYZsh{}dividing by the bin size, and averaging accross all trials}
+         	\PY{c}{\PYZsh{}T=2.0 \PYZsh{}seconds}
+         	\PY{c}{\PYZsh{}bin\PYZus{}width=0.005}
+         	\PY{c}{\PYZsh{}t2=np.arange(0,T,bin\PYZus{}width)}
+         	\PY{c}{\PYZsh{}binned\PYZus{}rate=[]}
+         	\PY{c}{\PYZsh{}for i in range(int(T/bin\PYZus{}width)):}
+         		\PY{c}{\PYZsh{}count=0.0        }
+         		\PY{c}{\PYZsh{}for j in trial9\PYZus{}spikes:}
+         			\PY{c}{\PYZsh{}if (i*bin\PYZus{}width\PYZlt{}=j\PYZlt{}(i+1)*bin\PYZus{}width):}
+         				\PY{c}{\PYZsh{}count+=1.0}
+         		\PY{c}{\PYZsh{}binned\PYZus{}rate.append(count/bin\PYZus{}width)}
+         
+         	\PY{c}{\PYZsh{}Convolve Gaussians with the spikes to calculate single\PYZhy{}trial rate estimate}
+         	\PY{n}{trial9\PYZus{}smoothed1}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{trial9\PYZus{}raster}\PY{p}{,}\PY{n}{G1}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}\PY{o}{/}\PY{n}{dt}
+         	\PY{n}{trial9\PYZus{}smoothed2}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{trial9\PYZus{}raster}\PY{p}{,}\PY{n}{G2}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}\PY{o}{/}\PY{n}{dt}
+          	\PY{c}{\PYZsh{}trial9\PYZus{}smoothed3=scipy.ndimage.filters.gaussian\PYZus{}filter(binned\PYZus{}rate,sigma1/bin\PYZus{}width)}
+          	\PY{c}{\PYZsh{}trial9\PYZus{}smoothed4=scipy.ndimage.filters.gaussian\PYZus{}filter(binned\PYZus{}rate,sigma2/bin\PYZus{}width)}
+             
+         	\PY{c}{\PYZsh{}Plot the single\PYZhy{}trial rate estimates}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{111}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t}\PY{p}{,}\PY{n}{trial9\PYZus{}smoothed1}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{\PYZdl{}}\PY{l+s+se}{\PYZbs{}\PYZbs{}}\PY{l+s}{sigma=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZdl{}}\PY{l+s}{\PYZsq{}} \PY{o}{\PYZpc{}}\PY{k}{sigma1})
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{t}\PY{p}{,}\PY{n}{trial9\PYZus{}smoothed2}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{\PYZdl{}}\PY{l+s+se}{\PYZbs{}\PYZbs{}}\PY{l+s}{sigma=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{\PYZdl{}}\PY{l+s}{\PYZsq{}} \PY{o}{\PYZpc{}}\PY{k}{sigma2})
+         	\PY{c}{\PYZsh{}ax.plot(t2,trial9\PYZus{}smoothed3,label=\PYZsq{}\PYZdl{}\PYZbs{}\PYZbs{}sigma=\PYZpc{}s\PYZdl{}\PYZsq{} \PYZpc{}sigma1)}
+         	\PY{c}{\PYZsh{}ax.plot(t2,trial9\PYZus{}smoothed4,label=\PYZsq{}\PYZdl{}\PYZbs{}\PYZbs{}sigma=\PYZpc{}s\PYZdl{}\PYZsq{} \PYZpc{}sigma2)}
+         	\PY{c}{\PYZsh{} ax.set\PYZus{}xlim(0,T)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{single\PYZhy{}trial rate estimate}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{legend}\PY{o}{=}\PY{n}{ax}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{best}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{n}{shadow}\PY{o}{=}\PY{n+nb+bp}{True}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+             
+         \PY{n}{one\PYZus{}c}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/usr/local/lib/python2.7/dist-packages/ipykernel/\_\_main\_\_.py:16: DeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentNeuronResponses_files/SYDE552-750AssignmentNeuronResponses_8_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    Plot the tuning curve with standard deviation error bars using data from
+50-250ms
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}36}]:} \PY{k}{def} \PY{n+nf}{one\PYZus{}d}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{c}{\PYZsh{}Load the synthetic data file MT\PYZhy{}tuning\PYZhy{}direction}
+         	\PY{n}{directions}\PY{p}{,}\PY{n}{spikeTimes}\PY{o}{=}\PY{n}{load\PYZus{}data\PYZus{}one}\PY{p}{(}\PY{p}{)}
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mf}{2.0} \PY{c}{\PYZsh{}seconds}
+         
+         	\PY{c}{\PYZsh{}find the unique direction values in the directions array}
+         	\PY{n}{unique\PYZus{}directions}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{unique}\PY{p}{(}\PY{n}{directions}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}for each unique direction, find the trial indices in that direction}
+         	\PY{n}{trial\PYZus{}indices}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{directions}\PY{o}{==}\PY{n}{u}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{o}{.}\PY{n}{tolist}\PY{p}{(}\PY{p}{)}
+         		\PY{k}{for} \PY{n}{u} \PY{o+ow}{in} \PY{n}{unique\PYZus{}directions}\PY{p}{]}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}calculate spike rate = spike count/time for each direction, avg over trials}
+         	\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}mean}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}std}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{direction} \PY{o+ow}{in} \PY{n}{trial\PYZus{}indices}\PY{p}{:}
+         		\PY{n}{dir\PYZus{}spikes\PYZus{}count}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         		\PY{k}{for} \PY{n}{trial} \PY{o+ow}{in} \PY{n}{direction}\PY{p}{:}
+         			\PY{n}{trial\PYZus{}spike\PYZus{}times}\PY{o}{=}\PY{n}{spikeTimes}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}
+         			\PY{c}{\PYZsh{}find indices of spikes between 50 and 250 ms}
+         			\PY{n}{fifty\PYZus{}to\PYZus{}twofifty\PYZus{}indices}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{trial\PYZus{}spike\PYZus{}times}\PY{p}{[}
+         				\PY{p}{(}\PY{l+m+mf}{0.050}\PY{o}{\PYZlt{}}\PY{o}{=}\PY{n}{trial\PYZus{}spike\PYZus{}times}\PY{p}{)} \PY{o}{\PYZam{}} \PY{p}{(}\PY{n}{trial\PYZus{}spike\PYZus{}times}\PY{o}{\PYZlt{}}\PY{o}{=}\PY{l+m+mf}{0.250}\PY{p}{)}\PY{p}{]}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}
+         			\PY{n}{fifty\PYZus{}to\PYZus{}twofifty\PYZus{}spike\PYZus{}count}\PY{o}{=}\PY{n+nb}{len}\PY{p}{(}\PY{n}{fifty\PYZus{}to\PYZus{}twofifty\PYZus{}indices}\PY{p}{)}
+         			\PY{n}{dir\PYZus{}spikes\PYZus{}count}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{fifty\PYZus{}to\PYZus{}twofifty\PYZus{}spike\PYZus{}count}\PY{p}{)}
+         		\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}mean}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{dir\PYZus{}spikes\PYZus{}count}\PY{p}{)}\PY{o}{/}\PY{p}{(}\PY{l+m+mf}{0.250}\PY{o}{\PYZhy{}}\PY{l+m+mf}{0.050}\PY{p}{)}\PY{p}{)}
+         		\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}std}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{std}\PY{p}{(}\PY{n}{dir\PYZus{}spikes\PYZus{}count}\PY{p}{)}\PY{o}{/}\PY{p}{(}\PY{l+m+mf}{0.250}\PY{o}{\PYZhy{}}\PY{l+m+mf}{0.050}\PY{p}{)}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Plot the tuning curve}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{111}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{unique\PYZus{}directions}\PY{p}{,}\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}mean}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{fill\PYZus{}between}\PY{p}{(}\PY{n}{unique\PYZus{}directions}\PY{p}{,}
+         		\PY{n}{np}\PY{o}{.}\PY{n}{subtract}\PY{p}{(}\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}mean}\PY{p}{,}\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}std}\PY{p}{)}\PY{p}{,}
+         		\PY{n}{np}\PY{o}{.}\PY{n}{add}\PY{p}{(}\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}mean}\PY{p}{,}\PY{n}{rate\PYZus{}vs\PYZus{}direction\PYZus{}std}\PY{p}{)}\PY{p}{,}
+         		\PY{n}{color}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{lightgray}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{angle (degrees)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{trial\PYZhy{}averaged firing rate, 50\PYZhy{}250ms}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+             
+         \PY{n}{one\PYZus{}d}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentNeuronResponses_files/SYDE552-750AssignmentNeuronResponses_10_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    Search the electrophysiology literature to find a (real) tuning curve
+from a mouse. Include and explain a figure that shows the tuning curve.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}37}]:} \PY{k+kn}{from} \PY{n+nn}{IPython.display} \PY{k+kn}{import} \PY{n}{Image}
+         \PY{n}{Image}\PY{p}{(}\PY{n}{filename}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{mouse\PYZus{}tuning\PYZus{}curves.png}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\texttt{\color{outcolor}Out[{\color{outcolor}37}]:}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentNeuronResponses_files/SYDE552-750AssignmentNeuronResponses_12_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    The middle row of this figure shows the tuning curves for three types of
+neurons in awake, running mice: primary visual cortex neurons (V1, layer
+2/3), Parvalbumin-expressing neurons (a class of inhibitory neurons in
+cortex), and SOM neurons (another cortical inhibitory neuron). The mice
+are presented with circular patches of drifting gratings at maximum
+contrast of different sizes (8-97 degrees in diameter, top row). Tuning
+curves plot firing rate as a function of grating size, with error bars
+showing +/- SEM. Firing rate for V1 neurons decreased with larger
+stimuli, revealing the visual surround supression effect investigated in
+this study. This suppressive surround is though to originate from
+cortical interneurons: the monotonic increase of SOM neurons' spike rate
+to grating size suggest that these cells are potential candidates in the
+generation of this top-down suppressive signal.
+
+    \subsection{2. Spike-Triggered Averages}\label{spike-triggered-averages}
+
+    Load the `c1p8' data file. This data is from Dayan and Abbott's betsite
+and contains H1 neuron spike data collected by de Ruyter van Steveninck.
+There are two variables: `stim' is the stimulus velocity, and `rho' is
+the response funciton ($dt=2$ms)
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}38}]:} \PY{k}{def} \PY{n+nf}{load\PYZus{}data\PYZus{}two}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{spiking\PYZus{}data}\PY{o}{=}\PY{n}{pickle}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n+nb}{open}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{c1p8.pkl}\PY{l+s}{\PYZsq{}}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{rb}\PY{l+s}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{stim}\PY{o}{=}\PY{n}{spiking\PYZus{}data}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{stim}\PY{l+s}{\PYZsq{}}\PY{p}{]}
+         	\PY{n}{rho}\PY{o}{=}\PY{n}{spiking\PYZus{}data}\PY{p}{[}\PY{l+s}{\PYZsq{}}\PY{l+s}{rho}\PY{l+s}{\PYZsq{}}\PY{p}{]}
+         	\PY{k}{return} \PY{n}{stim}\PY{p}{,}\PY{n}{rho}
+\end{Verbatim}
+
+    Plot the spike-triggered average stimulus. You can omit spikes that
+occur less than a window length after the start of the recording.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}39}]:} \PY{c}{\PYZsh{}Just to document my misunderstanding, here\PYZsq{}s what I did initially:}
+         \PY{c}{\PYZsh{}calculate the average value of the stimulus in the window timesteps}
+         \PY{c}{\PYZsh{}before each spike, and append this value to the list for each spike.}
+         \PY{c}{\PYZsh{}produces array.shape=(t,1). }
+         \PY{k}{def} \PY{n+nf}{spike\PYZus{}trig\PYZus{}avg}\PY{p}{(}\PY{n}{stim}\PY{p}{,}\PY{n}{spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{spike\PYZus{}indices}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{spikes}\PY{o}{==}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}
+         	\PY{n}{window} \PY{o}{=} \PY{n+nb}{int}\PY{p}{(}\PY{n}{window\PYZus{}width} \PY{o}{/} \PY{n}{dt}\PY{p}{)}
+         	\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{spike\PYZus{}indices}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+         		\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{o}{=}\PY{l+m+mi}{0}
+         		\PY{k}{if} \PY{n}{i} \PY{o}{\PYZgt{}} \PY{n}{window}\PY{p}{:} \PY{c}{\PYZsh{}ignore time points before the first window}
+         			\PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{window}\PY{p}{)}\PY{p}{:}
+         				\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{o}{+}\PY{o}{=}\PY{n}{stim}\PY{p}{[}\PY{n}{i}\PY{o}{\PYZhy{}}\PY{n}{j}\PY{p}{]}
+         		\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{p}{)}
+         
+         	\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{p}{)}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}\PY{o}{/}\PY{n+nb}{len}\PY{p}{(}\PY{n}{spike\PYZus{}indices}\PY{p}{)}
+         
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{111}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{spike\PYZus{}indices}\PY{o}{*}\PY{n}{dt}\PY{p}{,}\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{p}{,}
+         		\PY{n}{label}\PY{o}{=}\PY{l+s}{\PYZsq{}}\PY{l+s}{\PYZdl{}}\PY{l+s+se}{\PYZbs{}\PYZbs{}}\PY{l+s}{tau\PYZus{}\PYZob{}window\PYZcb{}=}\PY{l+s+si}{\PYZpc{}s}\PY{l+s}{ (s)}\PY{l+s}{\PYZsq{}} \PY{o}{\PYZpc{}}\PY{k}{window\PYZus{}width})
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time (seconds)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{spike\PYZhy{}triggered average}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}40}]:} \PY{c}{\PYZsh{}correct method}
+         \PY{c}{\PYZsh{}for each timestep in the window, find the value of the stimuli at time=t }
+         \PY{c}{\PYZsh{}before each spike, and append to the list the average of this value over all spikes}
+         \PY{c}{\PYZsh{}produces array.shape=(window,1)}
+         \PY{k}{def} \PY{n+nf}{spike\PYZus{}trig\PYZus{}avg2}\PY{p}{(}\PY{n}{stim}\PY{p}{,}\PY{n}{spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{window} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{window\PYZus{}width} \PY{o}{/} \PY{n}{dt}\PY{p}{)}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{)}
+         	\PY{c}{\PYZsh{}truncate spikes in first window timesteps}
+         	\PY{n}{spike\PYZus{}indices}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{spikes}\PY{p}{[}\PY{n+nb}{len}\PY{p}{(}\PY{n}{window}\PY{p}{)}\PY{p}{:}\PY{p}{]}\PY{o}{==}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}
+         	\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         	\PY{k}{for} \PY{n}{t} \PY{o+ow}{in} \PY{n}{window}\PY{p}{:}
+         		\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+         		\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n}{spike\PYZus{}indices}\PY{p}{:}
+         			\PY{c}{\PYZsh{}undo truncation when indexing from stimulus}
+         			\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stim}\PY{p}{[}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{n+nb}{len}\PY{p}{(}\PY{n}{window}\PY{p}{)}\PY{p}{)}\PY{o}{\PYZhy{}}\PY{n}{t}\PY{p}{]}\PY{p}{)}
+         		\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{stim\PYZus{}sum\PYZus{}i}\PY{p}{)}\PY{p}{)}
+         
+         	\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{n}{spike\PYZus{}triggered\PYZus{}avg}\PY{p}{)}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}
+         
+         	\PY{k}{return} \PY{o}{\PYZhy{}}\PY{l+m+mf}{1.0}\PY{o}{*}\PY{n}{window}\PY{o}{*}\PY{n}{dt}\PY{p}{,} \PY{n}{spike\PYZus{}triggered\PYZus{}avg}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}41}]:} \PY{k}{def} \PY{n+nf}{two\PYZus{}b}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{c}{\PYZsh{}load the synthetic data}
+         	\PY{n}{stim}\PY{p}{,}\PY{n}{rho}\PY{o}{=}\PY{n}{load\PYZus{}data\PYZus{}two}\PY{p}{(}\PY{p}{)}
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.002}
+         	\PY{n}{window\PYZus{}width}\PY{o}{=}\PY{l+m+mf}{0.200}
+         
+         	\PY{c}{\PYZsh{}calculate the spike triggered average}
+         	\PY{n}{window}\PY{p}{,} \PY{n}{sta} \PY{o}{=} \PY{n}{spike\PYZus{}trig\PYZus{}avg2}\PY{p}{(}\PY{n}{stim}\PY{p}{,}\PY{n}{rho}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}
+         	
+         	\PY{c}{\PYZsh{}Plot the spike\PYZhy{}triggered average}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{111}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{window}\PY{p}{,}\PY{n}{sta}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time before spike (seconds)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{spike\PYZhy{}triggered average}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+             
+         \PY{n}{two\PYZus{}b}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentNeuronResponses_files/SYDE552-750AssignmentNeuronResponses_20_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    Generate 100 seconds of approximate white noise by drawing independent
+Gaussian-distributed samples every ms with $mean=0$ and $SD=1$. Use this
+as input to the function \texttt{syntheticNeuron()} and calculate the
+spike-triggered average of this signal from the output. How and why is
+it different?
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}42}]:} \PY{k}{def} \PY{n+nf}{white\PYZus{}noise}\PY{p}{(}\PY{n}{mean}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{std}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{,}\PY{n}{T}\PY{o}{=}\PY{l+m+mi}{100}\PY{p}{,}\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.001}\PY{p}{,}\PY{n}{rng}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{RandomState}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+         	\PY{k}{return} \PY{n}{rng}\PY{o}{.}\PY{n}{normal}\PY{p}{(}\PY{n}{mean}\PY{p}{,}\PY{n}{std}\PY{p}{,}\PY{n}{T}\PY{o}{/}\PY{n}{dt}\PY{p}{)}
+         
+         \PY{k}{def} \PY{n+nf}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{drive}\PY{p}{)}\PY{p}{:}
+         	\PY{l+s+sd}{\PYZdq{}\PYZdq{}\PYZdq{}}
+         \PY{l+s+sd}{	Simulates a mock neuron with a time step of 1ms.}
+         \PY{l+s+sd}{	Arguments:}
+         \PY{l+s+sd}{	drive \PYZhy{} input to the neuron (expect zero mean; SD=1)}
+         \PY{l+s+sd}{	Returns:}
+         \PY{l+s+sd}{	rho \PYZhy{} response function (0=non\PYZhy{}spike and 1=spike at each time step)}
+         \PY{l+s+sd}{	\PYZdq{}\PYZdq{}\PYZdq{}}	
+         	  
+         	\PY{n}{dt} \PY{o}{=} \PY{l+m+mf}{0.001}
+         	\PY{n}{T} \PY{o}{=} \PY{n}{dt}\PY{o}{*}\PY{n+nb}{len}\PY{p}{(}\PY{n}{drive}\PY{p}{)}
+         	\PY{n}{time} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{T}\PY{p}{,} \PY{n}{dt}\PY{p}{)}
+         	\PY{n}{lagSteps} \PY{o}{=} \PY{l+m+mf}{0.02}\PY{o}{/}\PY{n}{dt}
+         	\PY{n}{drive} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{concatenate}\PY{p}{(}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{n}{lagSteps}\PY{p}{)}\PY{p}{,} \PY{n}{drive}\PY{p}{[}\PY{n}{lagSteps}\PY{p}{:}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{system} \PY{o}{=} \PY{n}{scipy}\PY{o}{.}\PY{n}{signal}\PY{o}{.}\PY{n}{lti}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{,} \PY{p}{[}\PY{l+m+mf}{0.03}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{2}\PY{o}{*}\PY{l+m+mf}{0.03}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{]}\PY{p}{)}
+         	\PY{n}{\PYZus{}}\PY{p}{,} \PY{n}{L}\PY{p}{,} \PY{n}{\PYZus{}} \PY{o}{=} \PY{n}{scipy}\PY{o}{.}\PY{n}{signal}\PY{o}{.}\PY{n}{lsim}\PY{p}{(}\PY{n}{system}\PY{p}{,} \PY{n}{drive}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n}{np}\PY{o}{.}\PY{n}{newaxis}\PY{p}{]}\PY{p}{,} \PY{n}{time}\PY{p}{)}
+         	\PY{n}{rate} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{divide}\PY{p}{(}\PY{l+m+mi}{30}\PY{p}{,} \PY{l+m+mi}{1} \PY{o}{+} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{l+m+mi}{50}\PY{o}{*}\PY{p}{(}\PY{l+m+mf}{0.05}\PY{o}{\PYZhy{}}\PY{n}{L}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{spikeProb} \PY{o}{=} \PY{n}{rate}\PY{o}{*}\PY{n}{dt}
+         	\PY{k}{return} \PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{rand}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{spikeProb}\PY{p}{)}\PY{p}{)} \PY{o}{\PYZlt{}} \PY{n}{spikeProb}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}43}]:} \PY{k}{def} \PY{n+nf}{two\PYZus{}c}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mi}{100}
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.001}
+         	\PY{n}{mean}\PY{o}{=}\PY{l+m+mi}{0}
+         	\PY{n}{std}\PY{o}{=}\PY{l+m+mi}{1}
+         	\PY{n}{seed}\PY{o}{=}\PY{l+m+mi}{3}
+         
+         	\PY{c}{\PYZsh{}generate noisy signal with gaussian sampled numbers}
+         	\PY{n}{rng}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{RandomState}\PY{p}{(}\PY{n}{seed}\PY{o}{=}\PY{n}{seed}\PY{p}{)}
+         	\PY{n}{noise}\PY{o}{=}\PY{n}{white\PYZus{}noise}\PY{p}{(}\PY{n}{mean}\PY{p}{,}\PY{n}{std}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}use Bryan\PYZsq{}s code to get the spikes from an input signal}
+         	\PY{n}{spikes}\PY{o}{=}\PY{n}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{noise}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}calculate the spike\PYZhy{}triggered average}
+         	\PY{n}{window\PYZus{}width}\PY{o}{=}\PY{l+m+mf}{0.200}
+         	\PY{n}{window}\PY{p}{,} \PY{n}{sta} \PY{o}{=} \PY{n}{spike\PYZus{}trig\PYZus{}avg2}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Plot the spike\PYZhy{}triggered average}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{111}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{window}\PY{p}{,}\PY{n}{sta}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time (seconds)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{spike\PYZhy{}triggered average}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+         
+         \PY{n}{two\PYZus{}c}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/usr/local/lib/python2.7/dist-packages/ipykernel/\_\_main\_\_.py:2: DeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
+  from ipykernel import kernelapp as app
+/usr/local/lib/python2.7/dist-packages/ipykernel/\_\_main\_\_.py:17: DeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentNeuronResponses_files/SYDE552-750AssignmentNeuronResponses_23_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    The spike triggered average of the white noise signal follows a similar
+pattern to the synthetic signal - stimuli within 2ms of the spike
+contribute little to spike probability, those within 2-4ms contribute
+the most, and signals farther back in time have exponentially reduced
+weight. However, the STA of the noise signal is, unsurprisingly, more
+noisy than the synthetic signal: while positive stimuli before the spike
+still drive the neurons towards a spike (and hence increase the STA),
+there are no longer temporal patterns within the input itself. A
+positive stimulus value at -2ms does not indicate that there will be
+positive values at -3ms or -1ms, so these points do not add coherently
+to the STA, producing a much noisier curve.
+
+    Create colored noise by convolving the white noise you generated above
+with a Gaussian kernel ($SD=0.020$). Feed the signal into the
+\texttt{syntheticNeuron()} function and calculate the spike-triggered
+average of this signal from the output. How and why is it different?
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}44}]:} \PY{k}{def} \PY{n+nf}{two\PYZus{}d}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+         
+         	\PY{n}{T}\PY{o}{=}\PY{l+m+mi}{100}
+         	\PY{n}{dt}\PY{o}{=}\PY{l+m+mf}{0.001}
+         	\PY{n}{mean}\PY{o}{=}\PY{l+m+mi}{0}
+         	\PY{n}{std}\PY{o}{=}\PY{l+m+mi}{1}
+         	\PY{n}{seed}\PY{o}{=}\PY{l+m+mi}{3}
+         
+         	\PY{c}{\PYZsh{}generate noisy signal with gaussian sampled numbers}
+         	\PY{n}{rng}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{RandomState}\PY{p}{(}\PY{n}{seed}\PY{o}{=}\PY{n}{seed}\PY{p}{)}
+         	\PY{n}{noise}\PY{o}{=}\PY{n}{white\PYZus{}noise}\PY{p}{(}\PY{n}{mean}\PY{p}{,}\PY{n}{std}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{rng}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}generate colored noise by convolving the noise signal with a gaussian}
+         	\PY{n}{t}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{T}\PY{p}{,}\PY{n}{dt}\PY{p}{)}
+         	\PY{n}{sigma}\PY{o}{=}\PY{l+m+mf}{0.020}
+         	\PY{n}{G} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{p}{(}\PY{n}{t}\PY{o}{\PYZhy{}}\PY{n}{np}\PY{o}{.}\PY{n}{average}\PY{p}{(}\PY{n}{t}\PY{p}{)}\PY{p}{)}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{o}{/}\PY{p}{(}\PY{l+m+mi}{2}\PY{o}{*}\PY{n}{sigma}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}     
+         	\PY{n}{G} \PY{o}{=} \PY{n}{G} \PY{o}{/} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{G}\PY{p}{)}
+         	\PY{n}{colored\PYZus{}noise}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{convolve}\PY{p}{(}\PY{n}{noise}\PY{p}{,}\PY{n}{G}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{same}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}feed colored noise into Bryan\PYZsq{}s spike generator}
+         	\PY{n}{spikes}\PY{o}{=}\PY{n}{synthetic\PYZus{}neuron}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}calculate the spike\PYZhy{}triggered average}
+         	\PY{n}{window\PYZus{}width}\PY{o}{=}\PY{l+m+mf}{0.200}
+         	\PY{n}{window}\PY{p}{,} \PY{n}{sta} \PY{o}{=} \PY{n}{spike\PYZus{}trig\PYZus{}avg2}\PY{p}{(}\PY{n}{colored\PYZus{}noise}\PY{p}{,}\PY{n}{spikes}\PY{p}{,}\PY{n}{dt}\PY{p}{,}\PY{n}{window\PYZus{}width}\PY{p}{)}
+         
+         	\PY{c}{\PYZsh{}Plot the spike\PYZhy{}triggered average}
+         	\PY{n}{fig}\PY{o}{=}\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{=}\PY{n}{fig}\PY{o}{.}\PY{n}{add\PYZus{}subplot}\PY{p}{(}\PY{l+m+mi}{111}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{window}\PY{p}{,}\PY{n}{sta}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{time (seconds)}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{spike\PYZhy{}triggered average}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+         	\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+             
+         \PY{n}{two\PYZus{}d}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/usr/local/lib/python2.7/dist-packages/ipykernel/\_\_main\_\_.py:2: DeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
+  from ipykernel import kernelapp as app
+/usr/local/lib/python2.7/dist-packages/ipykernel/\_\_main\_\_.py:17: DeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{SYDE552-750AssignmentNeuronResponses_files/SYDE552-750AssignmentNeuronResponses_26_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    The STA has the same overall shape as the original white noise signal,
+but is much smoother. Smoothing the white noise creates temporal
+correlations within the driving input. The result is that the extent to
+which each stimulus value contribues to the STA indicates how much the
+points immediately before and after will contribute. This recreates the
+smooth shape we saw in \texttt{two\_b()}, except that the curve
+maintains higher values farther back in time. This curvature can be
+manipulated with the $\sigma$ parameter, but unless the smoothed white
+noise signal we generate accurately reproduces the spikes incident on a
+neuron, we wouldn't expect the curvature to precisely match
+\texttt{two\_b()}.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor} }]:} 
+\end{Verbatim}
+
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+    \end{document}

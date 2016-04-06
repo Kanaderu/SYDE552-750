@@ -1,0 +1,1 @@
+<keras.callbacks.History object at 0x5d06990>

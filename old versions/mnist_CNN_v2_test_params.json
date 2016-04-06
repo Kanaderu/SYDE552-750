@@ -1,0 +1,1 @@
+{"epochs": 1, "test_datapoints": 600.0, "classes": 10, "train_datapoints": 600.0, "momentum": 0.9, "decay": 1e-06, "nesterov": true, "learning_rate": 0.01, "batch_size": 128, "filename": "mnist_CNN_v2_test"}
