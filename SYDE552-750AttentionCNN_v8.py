@@ -90,8 +90,8 @@ def build_from_keras(arch_dict,model_dict,conn_dict,probe_dict,images,pt):
 			#sublayer that receives feedforward from above and feedback from sal
 			my_input=model_dict[key+'_pre']
 			shape_in=my_input.output.shape_out
-			model_dict[key] = nengo.Node(FeatureMap2d(shape_in,
-											activation='linear', recurrent='none'))
+			model_dict[key] = nengo.Node(FeatureMap2d(shape_in, #'none', 'center-surround'
+											activation='linear', recurrent='center-surround'))
 			conn_dict[key+'_pre'+'_to_'+key]=nengo.Connection(
 											my_input,model_dict[key],synapse=None)
 			#FB connections built in method build_salience_layers
@@ -203,11 +203,11 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict,stim
 											competition=comp)) #softmax
 			conn_dict[last_name+'_to_'+my_name]=nengo.Connection(
 											my_input,model_dict[my_name],synapse=None)
-			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
 			#stimulate specific features externally
 			model_dict['stim_'+my_name]=nengo.Node(stim_dict[key],size_out=shape_in)
 			conn_dict['stim_'+my_name+'_to_'+my_name]=nengo.Connection(
 											model_dict['stim_'+my_name],model_dict[my_name],synapse=None)			
+			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
 
 			#B_near unit
 			#assumption: salience of FM_n feeds back additively/multiplicatively to FM_n-1, not farther
@@ -222,10 +222,11 @@ def build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict,stim
 											feedback_near=FB_near_type,k_FB_near=k_FB_near))
 			conn_dict[last_name+'_to_'+my_name]=nengo.Connection( #connect C to B_near
 											my_input,model_dict[my_name],synapse=None)
-			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
+
 			tau_FB_near=FB_dict[key]['tau_FB_near']
 			conn_dict[my_name+'_to_'+key]=nengo.Connection( #connect B_near back to conv
 											model_dict[my_name],model_dict[key],synapse=tau_FB_near)
+			probe_dict[my_name]=nengo.Probe(model_dict[my_name])
 
 			#B_far unit
 			#assumption: salience of FM_n feedsback to salience of FM_{n-1}, not to FM_n-1
@@ -270,18 +271,22 @@ def build_model(arch_dict,X_train,frac,pt,FB_dict,stim_dict):
 		build_salience_layers(arch_dict,model_dict,conn_dict,probe_dict,FB_dict,stim_dict)
 	return model, model_dict, conn_dict, probe_dict
 
-def get_error(sim,model,data,labels,probe_dict,n_images,pt):
+def get_error(sim,model,data,labels,probe_dict,n_images,pt,dataset):
 	
 	print 'Calculating error...'
 	y_predicted = sim.data[probe_dict['output']][::pt/0.001].ravel().astype(int) #probe at end of pt
 	y_true = labels[:n_images]
 
 	results={}
-	results['error rate']=round(np.count_nonzero(y_predicted != y_true)/(1.0*len(y_true))*100)/100
+	results['error rate']=np.count_nonzero(y_predicted != y_true)/(1.0*len(y_true))
 
 	#for each unique class, find the number correct, false positive, false negative
-	# for n in np.arange(0.0,10.0,1.0): #MNIST
-	for n in np.array([0,1,2]): #lines
+	if dataset == 'mnist':
+		classes=np.arange(0.0,10.0,1.0)
+	if dataset=='lines' or 'H' or 'D' or 'V':
+		classes=np.array([0,1,2])
+
+	for n in classes:
 		results[n]={}
 		true_index=np.where(y_true==int(n))[0]
 		predicted_index=np.where(y_predicted==n)[0]
@@ -328,6 +333,8 @@ def plot_saliences(layer,image,sim,model_dict,probe_dict,pt):
 	ax=fig.add_subplot(111)
 	ax.bar(indices,normed_activations[image][0],width=1,label='t=0.0',alpha=0.5,color='b')
 	ax.bar(indices,normed_activations[image][-1],width=1,label='t=%s' %timesteps,alpha=0.5, color='g')
+	# ax.bar(indices,activations[image][0],width=1,label='t=0.0',alpha=0.5,color='b')
+	# ax.bar(indices,activations[image][-1],width=1,label='t=%s' %timesteps,alpha=0.5, color='g')
 	ax.set_xlabel('Feature #')
 	ax.set_ylabel('Activation')
 	ax.set_xlim(0,FMs)
@@ -366,7 +373,7 @@ def plot_avg_salience(layer,data,sim,model_dict,probe_dict,pt):
 	legend=ax.legend(loc='best',shadow=True)
 	plt.show()
 
-def plot_outputs(image,sim,model_dict,probe_dict,pt):
+def plot_outputs(image,sim,model_dict,probe_dict,pt,dataset):
 
 	print 'Plotting Class Activations...'
 	sal_vs_time=[] #(FM_activities,timesteps)
@@ -374,8 +381,10 @@ def plot_outputs(image,sim,model_dict,probe_dict,pt):
 	timesteps=pt/0.001
 	images=data.shape[0]/timesteps
 	classes=data.shape[1]
-	# indices=np.arange(0,classes,1) #MNIST
-	indices=np.array([0,1,2]) #lines
+	if dataset == 'mnist':
+		indices=np.arange(0.0,10.0,1.0)
+	if dataset=='lines' or 'H' or 'D' or 'V':
+		indices=np.array([0,1,2])
 	activations=data.reshape((images, timesteps, classes))
 	normed_activations=np.zeros((activations.shape))
 	for im in range(normed_activations.shape[0]):
@@ -395,7 +404,7 @@ def plot_outputs(image,sim,model_dict,probe_dict,pt):
 	legend=ax.legend(loc='best',shadow=True)
 	plt.show()
 
-def plot_image(image,layer,FM_number,data,sim,arch_dict,model_dict,probe_dict,pt,n_images):
+def plot_image(image,FM_number,layer,data,sim,arch_dict,model_dict,probe_dict,pt,n_images):
 
 	print 'Displaying image...'
 	img=data[image][0] #expects training data as 4D tuple (images, channels, img_x, img_y)
@@ -448,48 +457,83 @@ def make_FB_stim_dict(arch_dict):
 				'k_FB_far': 0, 
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
-			stim_dict[key][0] = 0
+			stim_dict[key][0] = -5
+			stim_dict[key][3] = -5
+			stim_dict[key][5] = 5
+			stim_dict[key][7] = -10
 		if key == 'conv1':
 			FB_dict[key] = {
 				'competition': 'softmax',
 				'FB_near_type': 'constant',
 				'tau_FB_near': 0.001,
-				'k_FB_near': 3,
+				'k_FB_near': 10,
 				'FB_far_type': 'dense_inverse',
 				'tau_FB_far': 0.001,
-				'k_FB_far': 5,
+				'k_FB_far': 10,
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
-			stim_dict[key][0] = 0
+			stim_dict[key][0] = 12
+			stim_dict[key][2] = -5
+			stim_dict[key][3] = 12
+			stim_dict[key][6] = -5
 		if key == 'conv2':
 			FB_dict[key] = {
 				'competition': 'softmax',
-				'FB_near_type': 'none',
+				'FB_near_type': 'constant',
 				'tau_FB_near': 0.001,
 				'k_FB_near': 10,
 				'FB_far_type': 'dense_inverse',
 				'tau_FB_far': 0.001,
-				'k_FB_far': 5,
+				'k_FB_far': 1,
 				}
 			stim_dict[key] = np.zeros((info['weights'].shape[0]))
-			stim_dict[key][0] = 0
+			stim_dict[key][0] = -20
+			stim_dict[key][1] = -20
+			stim_dict[key][2] = -20
+			stim_dict[key][3] = -10
+			stim_dict[key][4] = -10
+			stim_dict[key][5] = -30
+			stim_dict[key][6] = 100
+			stim_dict[key][7] = -20
 	return FB_dict, stim_dict
 
 def main():
 
-	# X_train, y_train, X_test, y_test = load_mnist()
-	datafile='lines_data_50000.npz'
-	labelfile='lines_labels_50000.npz'
-	datafile='+_data.npz'
-	labelfile='+_labels.npz'
+	dataset='HD'
 
-	X_train, y_train, X_test, y_test = load_lines(datafile,labelfile,split=0.8)
-	data=(X_test,y_test)
+	if dataset=='mnist':
+		X_train, y_train, X_test, y_test = load_mnist()
+		archfile='keras_CNN_v5_mnist'
+	if dataset=='lines':
+		datafile='mix_data.npz'
+		labelfile='mix_labels.npz'
+		X_train, y_train, X_test, y_test = load_lines(datafile,labelfile,split=0.8)
+		archfile='keras_CNN_v5_line_2'
+	if dataset=='crosses':
+		datafile='+_data.npz'
+		labelfile='+_labels.npz'
+		X_train, y_train, X_test, y_test = load_lines(datafile,labelfile,split=0.8)
+		archfile='keras_CNN_lines'
+	if dataset=='H':
+		datafile='H_data.npz'
+		labelfile='H_labels.npz'
+		X_train, y_train, X_test, y_test = load_lines(datafile,labelfile,split=0.8)
+		archfile='keras_CNN_lines'
+	if dataset=='D':
+		datafile='D_data.npz'
+		labelfile='D_labels.npz'
+		X_train, y_train, X_test, y_test = load_lines(datafile,labelfile,split=0.8)
+		archfile='keras_CNN_lines'
+	if dataset=='HD':
+		datafile='HD_data.npz'
+		labelfile='HD_labels.npz'
+		X_train, y_train, X_test, y_test = load_lines(datafile,labelfile,split=0.8)
+		archfile='keras_CNN_lines'
 
-	archfile='mnist_CNN_v5_50000'
+	data=(X_test[1:],y_test[1:])
 	arch_dict = import_keras_json(archfile)
-	pt=0.003 #image presentation time, larger = more time for feedback
-	frac=0.1 #fraction of dataset to simulate
+	pt=0.01 #image presentation time, larger = more time for feedback
+	frac=0.02 #fraction of dataset to simulate
 
 	FB_dict, stim_dict = make_FB_stim_dict(arch_dict)
 	model, model_dict, conn_dict, probe_dict = build_model(arch_dict,data[0],frac,pt,FB_dict,stim_dict)
@@ -497,23 +541,28 @@ def main():
 	print 'Running the simulation...'
 	sim = nengo.Simulator(model)
 	n_images=int(frac*len(data[0]))
+	# for n in range(n_images):
+	# 	sim.run(pt)
+		# for node in sim.model.nodes:
+		# 	print sim._node_outputs[node]
 	sim.run(pt*n_images)
 
-	results=get_error(sim,model,data[0],data[1],probe_dict,n_images,pt)
-	print 'results'
+	print 'Printing results...'
+	results=get_error(sim,model,data[0],data[1],probe_dict,n_images,pt,dataset)
 	for key, item in results.items():
 		print key, '...', item
 
-	image_num=0
-	layer=0
-	FM_number=0
+	image_num=1
+	layer=1
+	FM_number=3
+	plot_saliences('sal_F_conv0',image_num,sim,model_dict,probe_dict,pt)
 	plot_saliences('sal_F_conv1',image_num,sim,model_dict,probe_dict,pt)
-	# plot_saliences('sal_F_conv1',image_num,sim,model_dict,probe_dict,pt)
-	# plot_saliences('sal_F_conv2',image_num,sim,model_dict,probe_dict,pt)
+	plot_saliences('sal_F_conv2',image_num,sim,model_dict,probe_dict,pt)
+	# plot_saliences('sal_B_near_conv0',image_num,sim,model_dict,probe_dict,pt)
 	# plot_avg_salience('sal_F_conv0',data[0],sim,model_dict,probe_dict,pt)
 	# plot_avg_salience('sal_F_conv1',data[0],sim,model_dict,probe_dict,pt)
 	# plot_avg_salience('sal_F_conv2',data[0],sim,model_dict,probe_dict,pt)
-	# plot_outputs(image_num,sim,model_dict,probe_dict,pt)
+	plot_outputs(image_num,sim,model_dict,probe_dict,pt,dataset)
 	plot_image(image_num,FM_number,layer,data[0],sim,arch_dict,model_dict,probe_dict,pt,n_images)
 
 

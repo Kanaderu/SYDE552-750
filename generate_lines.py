@@ -9,25 +9,25 @@ import matplotlib.pyplot as plt
 
 pixels_x=64
 pixels_y=64
-N=1000
+N=10000
 images=[]
 labels=[]
 
-width_mean=2
-width_sigma=2
-intensity_mean=0.7
-intensity_sigma=0.2
+width_mean=1
+width_sigma=0.1
+intensity_mean=0.9
+intensity_sigma=0.1
 angle_sigma=5
-filter_sigma=2
+filter_sigma=1
 filter_unif=5
-noise_sigma=0.05
+noise_sigma=0.03
 
 
 for n in range(N):
 	if np.mod(n,100)==0: print '%s/%s images generated' %(n,N)
 	img=np.zeros((pixels_x, pixels_y))
 	#0=(-), 1=(|), 2=(\), 3=(x), 4=(+)
-	label=np.random.random_integers(low=4,high=4)
+	label=np.random.random_integers(low=0,high=2)
 
 	center=np.random.uniform(low=0,high=pixels_x)
 	width=np.random.normal(loc=width_mean,scale=width_sigma)
@@ -39,28 +39,33 @@ for n in range(N):
 
 	for i in range(pixels_x):
 		for j in range(pixels_y):
-			#horizontal line
-			# if label == 0 and j>=np.min(line_r) and j <= np.max(line_r):
-			# 	img[j][i]=line_i
+			# horizontal line
+			if label == 0 and j>=np.min(line_r) and j <= np.max(line_r):
+				img[j][i]=line_i
 
 			# vertical line
-			# if label == 1 and i>=np.min(line_c) and i <= np.max(line_c):
-			# 	img[j][i]=line_i
+			if label == 1 and i>=np.min(line_c) and i <= np.max(line_c):
+				img[j][i]=line_i
 
-			#diagonal line
-			# if label == 2 and i==j:
-			# 	img[j][i]=line_i				
+			# diagonal line
+			if label == 2 and i==j:
+				img[j][i]=2*line_i				
 
 			#x marks the spot
 			# if (label == 2 and i==j): # or (label == -1 and i==pixels_x-j) #gives X shape
 			# 	img[j][i]=line_i
 
 			#cross
-			if j>=np.min(line_r) and j <= np.max(line_r):
-				img[j][i]=line_i
-			if i>=np.min(line_c) and i <= np.max(line_c):
-				img[j][i]=line_i
+			# if j>=np.min(line_r) and j <= np.max(line_r):
+			# 	img[j][i]=line_i
+			# if i>=np.min(line_c) and i <= np.max(line_c):
+			# 	img[j][i]=line_i
 
+			#HD
+			# if j>=np.min(line_r) and j <= np.max(line_r):
+			# 	img[j][i]=line_i
+			# if i==j:
+			# 	img[j][i]=2*line_i
 	#apply cropping (changes imagesize = bad)
 	# img=img[pixels_x/4:-pixels_x/4, pixels_y/4:-pixels_y/4]
 
@@ -80,5 +85,5 @@ for n in range(N):
 	# plt.imshow(img, cmap='gray',vmin=0, vmax=1)
 	# plt.show()
 
-np.savez_compressed('+_data',np.array(images))
-np.savez_compressed('+_labels',np.array(labels))
+np.savez_compressed('mix_data',np.array(images))
+np.savez_compressed('mix_labels',np.array(labels))

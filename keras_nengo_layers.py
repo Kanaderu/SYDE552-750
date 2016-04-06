@@ -158,13 +158,14 @@ class FeatureMap2d(Process):
     shape_in = TupleParam('shape_in', length=3)
     shape_out = TupleParam('shape_out', length=3)
 
-    def __init__(self, shape_in, activation='linear', recurrent='none'):
+    def __init__(self, shape_in, activation='linear', recurrent='none',rad=1):
         from nengo.utils.compat import is_iterable, is_integer
 
         self.shape_in = tuple(shape_in)
         self.shape_out = tuple(shape_in)
         self.activation=activation
         self.recurrent=recurrent
+        self.rad=rad
 
         super(FeatureMap2d, self).__init__(
             default_size_in=np.prod(self.shape_in),
@@ -179,8 +180,19 @@ class FeatureMap2d(Process):
             
             if self.recurrent == 'none':
             	y = x
-            #TODO - center-surround inhibition
-
+            #center-surround inhibition: in each feature map, add the activity of x[i][j] to itself,
+            #then take 8 nearest neighbors and subtract their activity from x[i][j]
+            #ignore borders
+            elif self.recurrent == 'center-surround':
+                dx=np.zeros(self.shape_in)
+                for fm in np.arange(0,x.shape[0]):
+                    for i in np.arange(self.rad,x.shape[1]-self.rad):
+                        for j in np.arange(self.rad,x.shape[2]-self.rad):
+                            dx[fm][i][j]=-2.5*self.rad*np.average(x[fm][i-self.rad:i+self.rad+1]\
+                                [:,j-self.rad:j+self.rad+1])+\
+                                2*x[fm][i][j]
+                y = x+dx
+                # print y.sum()
             if self.activation =='linear':
                 return y.ravel()
 
@@ -281,7 +293,7 @@ class Sal_F(Process):
 		def step_F(t, x):
 			x = x.reshape(shape_in)
 			# y = np.sum(x,axis=(1,2))
-			y = np.average(x,axis=(1,2)) #TODO: adjust k_FB to make this work
+			y = np.average(x,axis=(1,2))
 			# print 'from F',y.shape,
 			return y.ravel()
 
